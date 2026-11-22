@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 
 from button_bin import Parameters, button_envelope, button_reference, foot, make_bin
-from button_lid import LOCATOR_DEPTH, PLATE_THICKNESS, make_lid
+from button_lid import LOCATOR_DEPTH, PLATE_THICKNESS, make_flush_snap_lid, make_lid
 
 
 @pytest.mark.parametrize("overrides", [
@@ -117,3 +117,18 @@ def test_lid_sits_on_reference_rim_and_clears_button(opening, default_bin):
     for lift in (0, 1, 3, 7, 15, 25, 35):
         assert lid.intersect(reference.translate((0, 0, lift))).Volume() < 1e-6
     assert lid.intersect(reference.translate((0, 0, -0.2))).Volume() > 1e-6
+
+
+def test_flush_snap_lid_has_single_bore_and_recess():
+    lid = make_flush_snap_lid()
+    assert lid.isValid() and len(lid.Solids()) == 1
+    bounds = lid.BoundingBox()
+    assert (bounds.xlen, bounds.ylen, bounds.zlen) == pytest.approx((37, 37, 3.2))
+    for angle in np.linspace(0, 2 * np.pi, 8, endpoint=False):
+        for z, radius in ((0.79, 17.3), (0.81, 15.25), (3.19, 15.25)):
+            direction = np.cos(angle), np.sin(angle)
+            assert not lid.isInside(cq.Vector(*((radius - 0.02) * x for x in direction), z))
+            assert lid.isInside(cq.Vector(*((radius + 0.02) * x for x in direction), z))
+    # The diagonal finger holes from the slotted version are filled in.
+    for sign in (-1, 1):
+        assert lid.isInside(cq.Vector(sign * 13, sign * 13, 2))

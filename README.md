@@ -33,6 +33,32 @@ The original dimension drawing appears at lower left.
 
 ## Drop-in lids for existing 1×1 bins
 
+### Flush 30.5 mm snap-in lid for ABDELat Ultimate Gridfinity
+
+The [flush snap-in STL](output/obsf30_1x1_flush_snap_lid_30p5_mw47599.stl)
+and [STEP](output/obsf30_1x1_flush_snap_lid_30p5_mw47599.step) seat inside
+the rounded rim of the MakerWorld 1×1 bin. The button presses into a single
+30.5 mm round opening. The underside recess leaves a 2.4 mm mounting
+thickness for the clips. To release the button, lift the lid out by the
+button flange and squeeze the clips from underneath.
+
+Use a taller 1×1 bin with the same rim and **at least 32.7 mm of clear depth**
+under the rim where the terminals sit. The supplied 38.55 mm-tall bin was
+used to verify the rim fit. Its floor would interfere with the terminal tips
+by about 0.35 mm when assembled with the flush lid.
+[MakerWorld profile 49320](https://makerworld.com/en/models/47599-ultimate-gridfinity-bins-collection-parametric#profileId-49320)
+
+Print in PETG with the flat button-facing side on the bed and the recessed
+underside facing up. Check that the plate seats flush, the button flange
+sits flat, and both clips latch and release. Check terminal clearance in
+the taller bin before seating the loaded lid.
+
+```bash
+/home/gkp/codes/.headless/bin/python button_lid.py --flush-snap
+```
+
+### Above-rim lids with clip slots
+
 Try the [30.6 mm lid](output/obsf30_1x1_lid_30p6.stl) first. The
 [30.2 mm lid](output/obsf30_1x1_lid_30p2.stl) trims another 0.4 mm off the
 body opening. These prototypes have a 2.4 mm plate and a 1.2 mm tapered
@@ -47,7 +73,7 @@ printing. With the default plate thickness, allow at least **30.5 mm**
 from the bin rim to the first obstruction below the terminal tips.
 An exposed button occupies the space above the bin.
 
-### ABDELat Ultimate Gridfinity 1×1 bin
+#### Above-rim lids fitted to ABDELat's 1×1 bin
 
 For the supplied 38.55 mm tall bin from MakerWorld profile 49320, use the
 locators fitted to its rounded rim:
