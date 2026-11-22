@@ -17,15 +17,18 @@ import cadquery as cq
 
 @dataclass(frozen=True)
 class Parameters:
-    height_u: int = 6
+    height_u: int = 7
     wall: float = 1.6
     floor_z: float = 6.8
     body_diameter: float = 29.5
     body_opening: float = 31.0
     flange_diameter: float = 33.2
     flange_clearance: float = 1.0  # Diametral, not radial.
-    button_height: float = 31.7  # Confirmed by user: top to terminal tip.
-    top_above_flange: float = 6.5  # Provisional; verify on the real button.
+    flange_to_terminal: float = 31.7  # From flange UNDERSIDE, not button top.
+    flange_to_switch_bottom: float = 19.2
+    top_above_flange: float = 6.5
+    cap_diameter: float = 25.0
+    cap_height: float = 3.5
     top_clearance: float = 2.0
     clip_span: float = 34.0  # X extent of the through relief rectangle.
     clip_width: float = 8.0  # Y extent; orient the two clips along X.
@@ -34,6 +37,18 @@ class Parameters:
     finger_depth: float = 4.5
     support_height: float = 15.0
     entry_chamfer: float = 0.3
+
+    @property
+    def button_height(self) -> float:
+        return self.top_above_flange + self.flange_to_terminal
+
+    @property
+    def terminal_projection(self) -> float:
+        return self.flange_to_terminal - self.flange_to_switch_bottom
+
+    @property
+    def switch_bottom_z(self) -> float:
+        return self.seat_z - self.flange_to_switch_bottom
 
     @property
     def nominal_z(self) -> float:
@@ -53,7 +68,7 @@ class Parameters:
 
     @property
     def tip_z(self) -> float:
-        return self.top_z - self.button_height
+        return self.seat_z - self.flange_to_terminal
 
     def validate(self) -> None:
         values = asdict(self)
@@ -62,6 +77,10 @@ class Parameters:
             raise ValueError("All parameters must be finite, positive millimetres or units.")
         if not isinstance(self.height_u, int):
             raise ValueError("height_u must be an integer.")
+        if self.flange_to_switch_bottom >= self.flange_to_terminal:
+            raise ValueError("Switch bottom must be above the terminal tips.")
+        if self.cap_height >= self.top_above_flange or self.cap_diameter >= self.flange_diameter:
+            raise ValueError("Button cap must fit above and inside the fixed flange.")
         if self.tip_z - self.floor_z < 1.0 - 1e-8:
             raise ValueError("Need at least 1 mm below the terminal tips; increase height_u.")
         if self.top_clearance < 2:
@@ -210,6 +229,49 @@ def button_envelope(p: Parameters) -> cq.Shape:
     ).clean()
 
 
+def button_reference(p: Parameters) -> cq.Shape:
+    """Recognizable visual reference, constrained by the exact dimension drawing.
+
+    The cap/flange extents and vertical datums are dimensioned in the source.
+    Barrel diameter, housing depth, blade spacing, and clip geometry are visual
+    estimates, not measured manufacturing dimensions. Use button_envelope for
+    clearance checks and physical coupons for clip qualification.
+    """
+    flange_thickness = p.top_above_flange - p.cap_height
+    r = p.flange_diameter / 2
+    # Rounded fixed flange, matching the quarter-round source silhouette.
+    flange = (cq.Workplane("XZ").moveTo(0, p.seat_z).lineTo(r, p.seat_z)
+              .threePointArc((r - flange_thickness * 0.293,
+                              p.seat_z + flange_thickness * 0.707),
+                             (r - flange_thickness, p.seat_z + flange_thickness))
+              .lineTo(0, p.seat_z + flange_thickness).close()
+              .revolve(360, (0, 0), (0, 1)).val())
+    cap = (cq.Workplane("XY", origin=(0, 0, p.seat_z + flange_thickness))
+           .circle(p.cap_diameter / 2).extrude(p.cap_height)
+           .edges(">Z").fillet(0.8).val())
+    barrel_d = p.body_diameter - 2.0  # Estimated from the source silhouette.
+    barrel_bottom = p.seat_z - 12.8
+    body = cylinder(barrel_d, barrel_bottom, p.seat_z)
+    housing = cq.Solid.makeBox(p.body_diameter, 14, barrel_bottom - p.switch_bottom_z + 0.1,
+                               cq.Vector(-p.body_diameter / 2, -7, p.switch_bottom_z))
+    neck_bottom = p.switch_bottom_z - 4.6
+    neck = cq.Solid.makeBox(6, 8, 4.7, cq.Vector(-3, -4, neck_bottom))
+    model = flange.fuse(cap, body, housing, neck)
+    for y in (-3.0, 3.0):
+        blade = cq.Solid.makeBox(2.8, 0.5, neck_bottom - p.tip_z + 0.1,
+                                 cq.Vector(-1.4, y - 0.25, p.tip_z))
+        model = model.fuse(blade)
+    for sign in (-1, 1):
+        root = sign * (barrel_d / 2 - 0.1)
+        clip = (cq.Workplane("XZ").polyline([
+            (root, p.seat_z - 3.0),
+            (sign * 16.8, p.seat_z - 4.2),
+            (root, p.seat_z - 11.8),
+        ]).close().extrude(3, both=True).val())
+        model = model.fuse(clip)
+    return model.clean()
+
+
 def export_pair(shape: cq.Shape, path: Path) -> None:
     cq.exporters.export(shape, str(path.with_suffix(".step")))
     cq.exporters.export(shape, str(path.with_suffix(".stl")),
@@ -222,6 +284,9 @@ def main() -> None:
     parser.add_argument("--config", type=Path, help="JSON overrides for Parameters fields")
     args = parser.parse_args()
     overrides = json.loads(args.config.read_text()) if args.config else {}
+    if "button_height" in overrides:
+        parser.error("button_height is now derived. Replace that legacy field with "
+                     "flange_to_terminal=31.7 and top_above_flange=6.5; use height_u >= 7.")
     p = Parameters(**overrides)
     p.validate()
     args.output.mkdir(parents=True, exist_ok=True)
@@ -237,8 +302,8 @@ def main() -> None:
 
     assembly = cq.Assembly(name="inspection_only_do_not_print")
     assembly.add(model, name="bin", color=cq.Color(0.15, 0.5, 0.65))
-    assembly.add(button_envelope(p), name="conservative_button_envelope",
-                 color=cq.Color(0.95, 0.55, 0.15, 0.5))
+    assembly.add(button_reference(p), name="button_visual_reference_approximate_details",
+                 color=cq.Color(0.95, 0.55, 0.15))
     assembly.add(foot().translate((0, 0, p.nominal_z)), name="upper_bin_foot",
                  color=cq.Color(0.5, 0.5, 0.5, 0.5))
     assembly.export(str(args.output / "inspection_assembly.step"))
@@ -247,8 +312,9 @@ def main() -> None:
     from validate_models import validate_all
     report = validate_all(p, shapes, args.output)
     (args.output / "validation.json").write_text(json.dumps(report, indent=2) + "\n")
-    from preview import render_preview
+    from preview import render_dimension_drawing, render_preview
     render_preview(model, p, args.output / "preview.png")
+    render_dimension_drawing(p, args.output / "button_dimensions.png")
     print(json.dumps(report, indent=2))
 
 

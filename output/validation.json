@@ -1,18 +1,18 @@
 {
-  "obsf30_1x1_6u": {
+  "obsf30_1x1_7u": {
     "valid_single_solid": true,
     "step_roundtrip": true,
     "dimensions_mm": [
       41.5,
       41.5,
-      45.8
+      52.8
     ],
-    "cad_volume_mm3": 28561.751,
-    "triangles": 14864,
-    "vertices": 7434,
+    "cad_volume_mm3": 30292.548,
+    "triangles": 14844,
+    "vertices": 7424,
     "watertight": true,
     "consistent_winding": true,
-    "volume_mm3": 28583.211
+    "volume_mm3": 30313.721
   },
   "fit_coupon_30p6": {
     "valid_single_solid": true,
@@ -60,12 +60,17 @@
     "volume_mm3": 3185.51
   },
   "clearance": {
-    "terminal_to_floor_mm": 1.5,
+    "button_overall_height_mm": 38.2,
+    "flange_to_terminal_mm": 31.7,
+    "terminal_projection_below_switch_mm": 12.5,
+    "flange_seat_z_mm": 40.5,
+    "terminal_tip_z_mm": 8.8,
+    "terminal_to_floor_mm": 2.0,
     "button_to_upper_foot_mm": 2.0,
     "button_bin_interference_mm3": 0,
     "stacking_interference_mm3": 0,
     "button_removal_path_clear": true,
     "clips_require_physical_fit_test": true,
-    "flange_height_requires_physical_confirmation": true
+    "vertical_datums_from_exact_drawing": true
   }
 }

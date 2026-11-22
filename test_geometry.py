@@ -6,11 +6,12 @@ import cadquery as cq
 import numpy as np
 import pytest
 
-from button_bin import Parameters, button_envelope, foot, make_bin
+from button_bin import Parameters, button_envelope, button_reference, foot, make_bin
 
 
 @pytest.mark.parametrize("overrides", [
     {"height_u": 5},
+    {"height_u": 6},
     {"height_u": 6.5},
     {"body_opening": 29.5},
     {"body_opening": 32.5},
@@ -57,9 +58,34 @@ def test_seat_and_full_depth_clip_reliefs(default_bin):
 
 
 def test_custom_height_and_clearance_remain_stackable():
-    p = replace(Parameters(), height_u=7, body_opening=31.4, clip_span=34.4)
+    p = replace(Parameters(), height_u=8, body_opening=31.4, clip_span=34.4)
     model = make_bin(p)
     assert model.isValid() and len(model.Solids()) == 1
     assert model.intersect(button_envelope(p)).Volume() < 1e-6
     assert model.intersect(foot().translate((0, 0, p.nominal_z))).Volume() < 1e-6
-    assert p.tip_z - p.floor_z == pytest.approx(8.5)
+    assert p.tip_z - p.floor_z == pytest.approx(9.0)
+
+
+def test_exact_drawing_vertical_datums():
+    p = Parameters()
+    assert p.button_height == pytest.approx(38.2)
+    assert p.terminal_projection == pytest.approx(12.5)
+    assert p.seat_z == pytest.approx(40.5)
+    assert p.switch_bottom_z == pytest.approx(21.3)
+    assert p.tip_z == pytest.approx(8.8)
+    assert p.tip_z - p.floor_z == pytest.approx(2.0)
+    # Regression: the old 31.7 mm overall assumption hid 5 mm of floor collision.
+    too_short = replace(p, height_u=6)
+    assert too_short.tip_z - too_short.floor_z == pytest.approx(-5.0)
+    with pytest.raises(ValueError, match="terminal tips"):
+        too_short.validate()
+
+
+def test_shaped_reference_matches_dimensioned_extents():
+    p = Parameters()
+    shape = button_reference(p)
+    assert shape.isValid() and len(shape.Solids()) == 1
+    bounds = shape.BoundingBox()
+    assert bounds.zmin == pytest.approx(p.tip_z, abs=0.001)
+    assert bounds.zmax == pytest.approx(p.top_z, abs=0.001)
+    assert bounds.zlen == pytest.approx(38.2, abs=0.001)

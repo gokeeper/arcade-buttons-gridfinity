@@ -1,7 +1,7 @@
 # Arcade Buttons × Gridfinity
 
 Parametric 3D-printable storage for arcade buttons, starting with
-**one Sanwa OBSF-30 snap-in button in a 1×1×6U Gridfinity bin**.
+**one Sanwa OBSF-30 snap-in button in a 1×1×7U Gridfinity bin**.
 The button drops into a flange cradle, with its switch and bare terminals
 suspended above the floor. Opposed clip reliefs prevent intentional snap-in
 retention; diagonal finger wells provide access beneath the fixed flange.
@@ -15,39 +15,75 @@ the full bin. OBSF-24 models and inserts for existing bins are planned.
 ## Files
 
 - [Saved design plan](PLAN.md)
-- [Bin STL](output/obsf30_1x1_6u.stl) and [STEP](output/obsf30_1x1_6u.step)
+- [Bin STL](output/obsf30_1x1_7u.stl) and [STEP](output/obsf30_1x1_7u.step)
 - Fit-coupon STLs: [30.6 mm](output/fit_coupon_30p6.stl),
   [31.0 mm](output/fit_coupon_31p0.stl), [31.4 mm](output/fit_coupon_31p4.stl)
-- [Inspection assembly](output/inspection_assembly.step): bin, conservative
-  button envelope, and the foot of a bin stacked above it. **Do not print this assembly.**
+- [Inspection assembly](output/inspection_assembly.step): bin, shaped button
+  reference, and the foot of a bin stacked above it. **Do not print this assembly.**
 - [Parameters used](output/parameters.json) and [validation results](output/validation.json)
 - [Editable CadQuery source](button_bin.py)
 
-## Fit and dimensions
+## Button drawing and dimensions
+
+![Shaped OBSF-30 reference with dimensions in millimetres](output/button_dimensions.png)
+
+These dimensions come from the [exact reference drawing](https://m.media-amazon.com/images/I/51oVK7HhGFL.jpg):
+
+| Button feature | Millimetres |
+|---|---:|
+| Fixed flange diameter | 33.2 |
+| Moving cap diameter | 25.0 |
+| Maximum dimensioned body diameter | 29.5 |
+| Top to flange underside | 6.5 |
+| Cap height above fixed flange top | 3.5 |
+| Flange underside to lower housing plane | 19.2 |
+| Lower housing plane to terminal tips | 12.5 |
+| Flange underside to terminal tips | 31.7 |
+| **Overall top-to-tip height** | **38.2 = 6.5 + 31.7** |
+
+**31.7 mm is measured from the flange underside.** The earlier 6U model
+mistakenly treated it as the overall height. Those exports have been removed;
+use the corrected 7U model. With the existing floor and 2 mm top clearance,
+the old 6U bin would have 5 mm of terminal/floor interference.
+
+The CAD reference now shows the rounded fixed flange, moving cap, barrel,
+retention clips, lower housing, and terminal blades. Its dimensioned extents
+follow the drawing. Undimensioned clip shapes, housing depth, barrel details,
+and terminal spacing are illustrative; the drawing does not fully specify
+those features for manufacturing or prove their fit.
+
+<details>
+<summary>Exact source drawing</summary>
+
+![Original OBSF-30 dimension drawing](docs/obsf30-dimensions.jpg)
+
+Source: [Amazon-hosted dimension image](https://m.media-amazon.com/images/I/51oVK7HhGFL.jpg).
+
+</details>
+
+## Bin fit and dimensions
 
 | Feature | Millimetres |
 |---|---:|
 | Grid pitch | 42 × 42 |
 | Exterior footprint | 41.5 × 41.5 |
-| Nominal height / stacking pitch | 42 (6U) |
-| Overall height, including trimmed lip | 45.8 |
+| Nominal height / stacking pitch | 49 (7U) |
+| Overall height, including trimmed lip | 52.8 |
 | Body opening | 31.0 |
 | Flange recess diameter | 34.2 |
 | Clip relief | 34 along X × 8 along Y |
 | Wall thickness | 1.6 |
 | Floor elevation from underside of foot | 6.8 |
-| Flange seat elevation | 33.5 |
-| Button top elevation | 40.0 |
-| Terminal tip elevation | 8.3 |
-| Space under terminals / above button | 1.5 / 2.0 |
+| Flange seat elevation | 40.5 |
+| Button top elevation | 47.0 |
+| Lower housing plane elevation | 21.3 |
+| Terminal tip elevation | 8.8 |
+| Space under terminals / above button | 2.0 / 2.0 |
 
-The design uses a **31.7 mm overall button height**, from top to terminal tip.
-Flange OD 33.2 mm and body OD 29.5 mm come from the
-[Sanwa catalog](https://rs2006.co.jp/e/sanwaseimitsu/Sanwa2019.pdf).
-The **6.5 mm top-to-flange-underside distance is provisional**: confirm it on
-your button before relying on the vertical clearances. If that distance changes,
-adjust `top_above_flange`; this moves the seat while preserving the designed top
-and terminal elevations for a correctly dimensioned button.
+The model derives overall button height from `top_above_flange` (6.5 mm) plus
+`flange_to_terminal` (31.7 mm). The fixed flange underside rests on the cradle;
+the terminals end 2 mm above the interior floor. A standard 6U configuration
+is rejected by the parameter checks.
 
 The relief dimensions are initial allowances, not measured dimensions of the
 uncompressed clips. The button must be oriented with its two clips pointing
@@ -74,8 +110,9 @@ needs checking.
 3. If the body opening binds, try 31.4 mm. If it feels unnecessarily loose,
    try 30.6 mm. If a clip catches, enlarge `clip_span` or `clip_width` rather
    than assuming a larger round hole will solve it.
-4. Confirm the top-to-flange-underside distance. Update the parameters if
-   necessary, and regenerate before printing the full bin.
+4. Compare your button with the exact drawing: 6.5 mm above the flange underside
+   and 31.7 mm below it. If your variant differs, update the parameters and
+   regenerate before printing the full bin.
 5. Print the bin upright, foot on the bed: same PETG settings, four perimeters,
    about 15% infill, and no supports as the starting setup. Check the slicer's
    overhang preview and layer paths; the cradle underside is a 15 mm tall gradual
@@ -119,8 +156,14 @@ Override any field of `Parameters` with a JSON file, for example:
 
 Units are millimetres. Clearances named `flange_clearance` are **diametral**.
 Regeneration writes four individual STEP/STL pairs, an inspection assembly,
-a preview, parameters, and validation results. The three coupon diameters stay
+a preview, a dimensioned button reference, parameters, and validation results.
+The three coupon diameters stay
 30.6/31.0/31.4 mm; other coupon dimensions follow the selected parameters.
+
+Old JSON configurations containing `button_height` are rejected because that
+value previously encoded the incorrect datum. Remove it and set
+`flange_to_terminal: 31.7`, `top_above_flange: 6.5`, and `height_u: 7` (or taller).
+Overall height is now a derived value, not a configurable field.
 
 ## Validation
 
@@ -130,8 +173,9 @@ The button envelope deliberately overestimates the lower body but **omits clips*
 these checks cannot establish physical clip fit or compensate for printer error.
 
 The geometry regression suite checks unsafe parameter combinations, cradle
-overhangs, flange support, continuous clip reliefs, and a larger 7U variant.
-The initial suite contains **13 passing tests**. To run it:
+overhangs, flange support, continuous clip reliefs, a larger 8U variant, and
+the exact drawing's vertical datums. It rejects the unsafe 6U case and checks
+the shaped reference's height. The suite contains **16 passing tests**. To run it:
 
 ```bash
 /home/gkp/codes/.headless/bin/pip install pytest

@@ -90,12 +90,17 @@ def validate_all(p: Parameters, shapes: dict[str, cq.Shape], output: Path) -> di
     assert model.isInside(cq.Vector(0, 16.2, p.seat_z - 0.05)), "Missing flange seat"
     assert model.isInside(cq.Vector(0, 0, p.floor_z - 0.1)), "Missing protective floor"
     results["clearance"] = {
+        "button_overall_height_mm": round(p.button_height, 3),
+        "flange_to_terminal_mm": p.flange_to_terminal,
+        "terminal_projection_below_switch_mm": round(p.terminal_projection, 3),
+        "flange_seat_z_mm": round(p.seat_z, 3),
+        "terminal_tip_z_mm": round(p.tip_z, 3),
         "terminal_to_floor_mm": round(p.tip_z - p.floor_z, 3),
         "button_to_upper_foot_mm": round(p.top_clearance, 3),
         "button_bin_interference_mm3": 0,
         "stacking_interference_mm3": 0,
         "button_removal_path_clear": True,
         "clips_require_physical_fit_test": True,
-        "flange_height_requires_physical_confirmation": True,
+        "vertical_datums_from_exact_drawing": True,
     }
     return results
