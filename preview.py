@@ -12,6 +12,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.collections import PolyCollection
+from matplotlib.path import Path as PlotPath
 import numpy as np
 
 from button_bin import Parameters, button_reference, foot
@@ -68,12 +69,49 @@ def rasterize(shape: cq.Shape, size: int = 900) -> np.ndarray:
 
 
 def draw_section(ax, shape: cq.Shape, color: str) -> None:
-    # YZ slice avoids the X-facing clip reliefs and exposes the flange support.
-    slab = cq.Solid.makeBox(0.02, 60, shape.BoundingBox().zmax + 1,
-                            cq.Vector(-0.01, -30, 0))
+    # XZ slice is aligned with the opposed clip reliefs and source side view.
+    slab = cq.Solid.makeBox(60, 0.02, shape.BoundingBox().zmax + 1,
+                            cq.Vector(-30, -0.01, 0))
     vertices, triangles = shape.intersect(slab).tessellate(0.04, 0.1)
-    polygons = [[(vertices[i].y, vertices[i].z) for i in triangle] for triangle in triangles]
+    polygons = [[(vertices[i].x, vertices[i].z) for i in triangle] for triangle in triangles]
     ax.add_collection(PolyCollection(polygons, facecolors=color, edgecolors="none"))
+
+
+def draw_source_side_view(ax, p: Parameters) -> None:
+    """Plot original source pixels, clipped to the button outline, at true datums.
+
+    This is a side-view projection overlay, not a manufactured 3D solid. Pixel
+    anchors are taken from docs/obsf30-dimensions.jpg. Piecewise vertical mapping
+    aligns all four dimensioned planes despite minor scan distortion.
+    """
+    drawing = Path(__file__).resolve().parent / "docs" / "obsf30-dimensions.jpg"
+    original = plt.imread(drawing)
+    # Generous outline follows the source ink while excluding dimension lines.
+    outline = PlotPath([
+        (133, 325), (133, 310), (146, 289), (174, 270), (202, 270),
+        (202, 230), (216, 222), (285, 213), (414, 209), (545, 213),
+        (610, 222), (628, 230), (628, 270), (656, 270), (679, 289),
+        (696, 310), (696, 326), (649, 326), (649, 365), (670, 365),
+        (670, 373), (681, 373), (681, 381), (691, 381), (701, 393),
+        (649, 528), (649, 607), (665, 607), (665, 638), (655, 648),
+        (502, 648), (502, 671), (483, 671), (483, 733), (462, 733),
+        (462, 842), (451, 855), (417, 855), (411, 844), (411, 733),
+        (379, 733), (379, 671), (328, 671), (328, 549), (307, 549),
+        (307, 648), (175, 648), (163, 638), (163, 607), (182, 607),
+        (182, 528), (129, 393), (138, 383), (146, 383), (146, 375),
+        (155, 375), (155, 365), (182, 365), (182, 326), (133, 325),
+    ], closed=True)
+    x0, x1, y0, y1 = 127, 704, 209, 856
+    yy, xx = np.mgrid[y0:y1, x0:x1]
+    mask = outline.contains_points(np.column_stack((xx.ravel(), yy.ravel())))
+    rgba = np.empty((y1 - y0, x1 - x0, 4), dtype=float)
+    rgba[:, :, :3] = original[y0:y1, x0:x1, :3] / 255.0
+    rgba[:, :, 3] = mask.reshape(yy.shape).astype(float)
+    x_edges = (np.arange(x0, x1 + 1) - 0.5 - 414) * p.flange_diameter / (692 - 136)
+    z_edges = np.interp(np.arange(y0, y1 + 1) - 0.5,
+                        [213, 324, 645, 853],
+                        [p.top_z, p.seat_z, p.switch_bottom_z, p.tip_z])
+    ax.pcolormesh(x_edges, z_edges, rgba, shading="flat", rasterized=True, zorder=2)
 
 
 def render_preview(model: cq.Shape, p: Parameters, path: Path) -> None:
@@ -86,7 +124,7 @@ def render_preview(model: cq.Shape, p: Parameters, path: Path) -> None:
     ax.set_title(f"OBSF-30 · 1×1×{p.height_u}U\nActual CAD geometry", fontsize=13, pad=8)
     section.set_facecolor("#f4f6f8")
     draw_section(section, model, "#458ba3")
-    draw_section(section, button_reference(p), "#e9aa50")
+    draw_source_side_view(section, p)
     draw_section(section, foot().translate((0, 0, p.nominal_z)), "#828b96")
     section.axhline(p.nominal_z, color="#828b96", linestyle="--", linewidth=0.8)
     section.annotate(f"{p.top_clearance:g} mm top clearance",
@@ -96,12 +134,12 @@ def render_preview(model: cq.Shape, p: Parameters, path: Path) -> None:
     section.annotate(f"{p.tip_z - p.floor_z:.1f} mm beneath terminals",
                      xy=(0, (p.tip_z + p.floor_z) / 2), xytext=(-26, 2), fontsize=10,
                      arrowprops={"arrowstyle": "->", "color": "#354456"})
-    section.annotate("Flange seat", xy=(16.3, p.seat_z), xytext=(18, p.seat_z - 8),
+    section.annotate("Flange underside", xy=(16.6, p.seat_z), xytext=(18, p.seat_z - 8),
                      fontsize=10, arrowprops={"arrowstyle": "->", "color": "#354456"})
-    section.set(xlim=(-28, 36), ylim=(-2, p.total_z + 7), xlabel="Y (mm)", ylabel="Z (mm)")
+    section.set(xlim=(-28, 36), ylim=(-2, p.total_z + 7), xlabel="X (mm)", ylabel="Z (mm)")
     section.set_aspect("equal")
     section.spines[["top", "right"]].set_visible(False)
-    section.set_title("YZ section: bin, shaped button reference, upper foot\nClips lie outside the section plane", fontsize=12)
+    section.set_title("XZ bin section + original button side view\nSource linework aligned to dimensioned planes", fontsize=12)
     # Show the exact source alongside the section, including the real clip
     # silhouette and dimension lines that cannot be inferred from a YZ slice.
     drawing = Path(__file__).resolve().parent / "docs" / "obsf30-dimensions.jpg"
@@ -112,7 +150,7 @@ def render_preview(model: cq.Shape, p: Parameters, path: Path) -> None:
              f"41.5 × 41.5 × {p.total_z:g} mm overall  |  "
              f"{p.nominal_z:g} mm stacking pitch  |  PETG · 0.4 mm nozzle · 0.2 mm layers",
              ha="center", fontsize=11, color="#354456")
-    fig.text(0.5, 0.025, "CAD reference details are approximate; the original drawing is shown at right. Physical fit still needs checking.",
+    fig.text(0.5, 0.025, "The centre button uses original drawing pixels as a projection overlay. Physical clip fit still needs checking.",
              ha="center", fontsize=10, color="#59687a")
     fig.subplots_adjust(left=0.015, right=0.99, bottom=0.15, top=0.87, wspace=0.18)
     fig.savefig(path, dpi=160, facecolor=fig.get_facecolor())

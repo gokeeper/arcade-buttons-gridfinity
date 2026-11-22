@@ -12,6 +12,11 @@ the full bin. OBSF-24 models and inserts for existing bins are planned.
 
 ![CAD preview and section](output/preview.png)
 
+The middle panel overlays the original button side-view linework on the bin's
+XZ section, aligned to the button top, flange underside, lower housing plane,
+and terminal tips. This is a side-view projection for visual comparison;
+physical clip fit still needs checking. The full source drawing appears at right.
+
 ## Files
 
 - [Saved design plan](PLAN.md)
