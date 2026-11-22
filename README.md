@@ -12,10 +12,10 @@ the full bin. OBSF-24 models and inserts for existing bins are planned.
 
 ![CAD preview and section](output/preview.png)
 
-The middle panel overlays the original button side-view linework on the bin's
-XZ section, aligned to the button top, flange underside, lower housing plane,
-and terminal tips. The cut passes through the clip reliefs. Orange shows the supporting ledges projected from the perpendicular section. This is a side-view projection for visual comparison;
-physical clip fit still needs checking. The full source drawing appears at right.
+The upper-right panel shows the original side view in a cut through the clip slots.
+The lower-right detail cuts through the supporting ledge at 90° to the slots.
+The red line marks the 0.80 mm radial contact between the flange and the seat.
+The original dimension drawing appears at lower left.
 
 ## Files
 

@@ -115,9 +115,8 @@ def draw_source_side_view(ax, p: Parameters) -> None:
 
 
 def render_preview(model: cq.Shape, p: Parameters, path: Path) -> None:
-    fig, (ax, section, side_view) = plt.subplots(
-        1, 3, figsize=(20, 8.5), facecolor="#f4f6f8",
-        gridspec_kw={"width_ratios": [1.0, 1.1, 1.0]},
+    fig, ((ax, section), (side_view, contact)) = plt.subplots(
+        2, 2, figsize=(13, 12), facecolor="#f4f6f8"
     )
     ax.imshow(rasterize(model))
     ax.axis("off")
@@ -134,18 +133,25 @@ def render_preview(model: cq.Shape, p: Parameters, path: Path) -> None:
     section.annotate(f"{p.tip_z - p.floor_z:.1f} mm beneath terminals",
                      xy=(0, (p.tip_z + p.floor_z) / 2), xytext=(-26, 2), fontsize=10,
                      arrowprops={"arrowstyle": "->", "color": "#354456"})
-    # Project the perpendicular seat section into the same view. Only show
-    # material directly beneath the flange, leaving the clip relief visible.
-    seat_band = cq.Solid.makeBox(0.04, 50, 1.4, cq.Vector(-0.02, -25, p.seat_z - 1.4))
-    bearing = model.intersect(seat_band).rotate((0, 0, 0), (0, 0, 1), 90)
-    draw_section(section, bearing, "#bd641e")
-    section.annotate("Flange supports\n(projected from Y)", xy=(16.2, p.seat_z - 0.3),
-                     xytext=(19, p.seat_z - 9), fontsize=9,
-                     arrowprops={"arrowstyle": "->", "color": "#844510"})
+    # Rotate both solids together to cut across the load-bearing ledge.
+    for solid, color in [(model, "#458ba3"), (button_reference(p), "#edba73")]:
+        draw_section(contact, solid.rotate((0, 0, 0), (0, 0, 1), -90), color)
+    outer = p.flange_diameter / 2
+    inner = p.body_opening / 2 + p.entry_chamfer
+    contact.plot([inner, outer], [p.seat_z, p.seat_z], color="#88230d", lw=4,
+                 solid_capstyle="butt")
+    contact.annotate(f"{outer-inner:.2f} mm radial contact",
+                     xy=((outer+inner)/2, p.seat_z), xytext=(outer-5, p.seat_z-2.5),
+                     arrowprops={"arrowstyle": "->"}, fontsize=11)
+    contact.set(xlim=(outer-5.5, outer+2.5), ylim=(p.seat_z-3.5, p.seat_z+2.5),
+                xlabel="Y (mm)", ylabel="Z (mm)", aspect="equal",
+                title="Flange resting on cradle · enlarged YZ section")
+    contact.text(outer-4.7, p.seat_z+1.4, "Button flange")
+    contact.text(outer+0.2, p.seat_z-1.2, "Bin")
     section.set(xlim=(-28, 36), ylim=(-2, p.total_z + 7), xlabel="X (mm)", ylabel="Z (mm)")
     section.set_aspect("equal")
     section.spines[["top", "right"]].set_visible(False)
-    section.set_title("XZ bin section + original button side view\nOrange shows the perpendicular flange seat", fontsize=12)
+    section.set_title("XZ bin section + original button side view\nCut through clip slots", fontsize=12)
     # Show the exact source alongside the section, including the real clip
     # silhouette and dimension lines that cannot be inferred from a YZ slice.
     drawing = Path(__file__).resolve().parent / "docs" / "obsf30-dimensions.jpg"
@@ -156,9 +162,9 @@ def render_preview(model: cq.Shape, p: Parameters, path: Path) -> None:
              f"41.5 × 41.5 × {p.total_z:g} mm overall  |  "
              f"{p.nominal_z:g} mm stacking pitch  |  PETG · 0.4 mm nozzle · 0.2 mm layers",
              ha="center", fontsize=11, color="#354456")
-    fig.text(0.5, 0.025, "The centre button uses original drawing pixels as a projection overlay. Physical clip fit still needs checking.",
+    fig.text(0.5, 0.025, "Upper right: original side view in the clip slots. Lower right: CAD section through the flange support.",
              ha="center", fontsize=10, color="#59687a")
-    fig.subplots_adjust(left=0.015, right=0.99, bottom=0.15, top=0.87, wspace=0.18)
+    fig.subplots_adjust(left=0.05, right=0.98, bottom=0.12, top=0.94, wspace=0.15, hspace=0.38)
     fig.savefig(path, dpi=160, facecolor=fig.get_facecolor())
     plt.close(fig)
 
