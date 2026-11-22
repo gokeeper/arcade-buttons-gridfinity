@@ -71,10 +71,11 @@ def validate_all(p: Parameters, shapes: dict[str, cq.Shape], output: Path) -> di
                          "cad_volume_mm3": round(shape.Volume(), 3), **mesh}
     model = next(iter(shapes.values()))
     envelope = button_envelope(p)
-    upper_foot = foot().translate((0, 0, p.nominal_z))
     assert model.intersect(envelope).Volume() < 1e-6, "Button envelope hits bin"
-    assert model.intersect(upper_foot).Volume() < 1e-6, "Stacking foot hits bin"
-    assert envelope.intersect(upper_foot).Volume() < 1e-6, "Upper foot presses button"
+    if not p.exposed_flange:
+        upper_foot = foot().translate((0, 0, p.nominal_z))
+        assert model.intersect(upper_foot).Volume() < 1e-6, "Stacking foot hits bin"
+        assert envelope.intersect(upper_foot).Volume() < 1e-6, "Upper foot presses button"
     # Test the removal path, not just the seated position.
     for lift in (0.5, 1.0, 3.0, 7.0, 15.0, 25.0, 35.0):
         assert model.intersect(envelope.translate((0, 0, lift))).Volume() < 1e-6, (
@@ -87,7 +88,14 @@ def validate_all(p: Parameters, shapes: dict[str, cq.Shape], output: Path) -> di
         assert not model.isInside(cq.Vector(sign * 15, sign * 15, p.seat_z - 2)), (
             "Finger recess is blocked"
         )
-    assert model.isInside(cq.Vector(0, 16.2, p.seat_z - 0.05)), "Missing flange seat"
+    contact_radius = (p.body_opening + p.flange_diameter) / 4 + p.entry_chamfer / 2
+    for sign in (-1, 1):
+        assert model.isInside(cq.Vector(0, sign * contact_radius, p.seat_z - 0.05)), (
+            "Missing flange seat"
+        )
+    assert model.intersect(envelope.translate((0, 0, -0.2))).Volume() > 1e-6, (
+        "Flange can sink below its seat"
+    )
     assert model.isInside(cq.Vector(0, 0, p.floor_z - 0.1)), "Missing protective floor"
     results["clearance"] = {
         "button_overall_height_mm": round(p.button_height, 3),
@@ -96,11 +104,20 @@ def validate_all(p: Parameters, shapes: dict[str, cq.Shape], output: Path) -> di
         "flange_seat_z_mm": round(p.seat_z, 3),
         "terminal_tip_z_mm": round(p.tip_z, 3),
         "terminal_to_floor_mm": round(p.tip_z - p.floor_z, 3),
-        "button_to_upper_foot_mm": round(p.top_clearance, 3),
         "button_bin_interference_mm3": 0,
-        "stacking_interference_mm3": 0,
         "button_removal_path_clear": True,
         "clips_require_physical_fit_test": True,
         "vertical_datums_from_exact_drawing": True,
     }
+    if p.exposed_flange:
+        results["clearance"]["button_above_rim_mm"] = round(p.top_z - p.total_z, 3)
+        for sign in (-1, 1):
+            # Probe from underneath the flange to just beyond the outer wall.
+            probe = cq.Solid.makeBox(7, 1, 1, cq.Vector(
+                sign * 18 - 3.5, -0.5, p.seat_z - p.finger_depth / 2
+            ))
+            assert model.intersect(probe).Volume() < 1e-6, "Finger access is blocked"
+    else:
+        results["clearance"].update(button_to_upper_foot_mm=round(p.top_clearance, 3),
+                                    stacking_interference_mm3=0)
     return results

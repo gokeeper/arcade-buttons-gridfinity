@@ -124,12 +124,21 @@ def render_preview(model: cq.Shape, p: Parameters, path: Path) -> None:
     section.set_facecolor("#f4f6f8")
     draw_section(section, model, "#458ba3")
     draw_source_side_view(section, p)
-    draw_section(section, foot().translate((0, 0, p.nominal_z)), "#828b96")
-    section.axhline(p.nominal_z, color="#828b96", linestyle="--", linewidth=0.8)
-    section.annotate(f"{p.top_clearance:g} mm top clearance",
-                     xy=(0, p.top_z + p.top_clearance / 2),
-                     xytext=(-26, p.top_z - 2), fontsize=10,
-                     arrowprops={"arrowstyle": "->", "color": "#354456"})
+    if p.exposed_flange:
+        section.annotate(f"{p.top_above_flange:g} mm above the rim",
+                         xy=(0, p.top_z), xytext=(-24, p.top_z + 6),
+                         fontsize=10, arrowprops={"arrowstyle": "->"})
+        section.annotate("Flange overhangs\nthe finger cutout",
+                         xy=(p.flange_diameter / 2 - 0.5, p.seat_z - 0.3),
+                         xytext=(22, p.seat_z + 3), fontsize=10,
+                         arrowprops={"arrowstyle": "->"})
+    else:
+        draw_section(section, foot().translate((0, 0, p.nominal_z)), "#828b96")
+        section.axhline(p.nominal_z, color="#828b96", linestyle="--", linewidth=0.8)
+        section.annotate(f"{p.top_clearance:g} mm top clearance",
+                         xy=(0, p.top_z + p.top_clearance / 2),
+                         xytext=(-26, p.top_z - 2), fontsize=10,
+                         arrowprops={"arrowstyle": "->", "color": "#354456"})
     section.annotate(f"{p.tip_z - p.floor_z:.1f} mm beneath terminals",
                      xy=(0, (p.tip_z + p.floor_z) / 2), xytext=(-26, 2), fontsize=10,
                      arrowprops={"arrowstyle": "->", "color": "#354456"})
@@ -148,21 +157,24 @@ def render_preview(model: cq.Shape, p: Parameters, path: Path) -> None:
                 title="Flange resting on cradle · enlarged YZ section")
     contact.text(outer-4.7, p.seat_z+1.4, "Button flange")
     contact.text(outer+0.2, p.seat_z-1.2, "Bin")
-    section.set(xlim=(-28, 36), ylim=(-2, p.total_z + 7), xlabel="X (mm)", ylabel="Z (mm)")
+    section.set(xlim=(-28, 39), ylim=(-2, max(p.total_z + 7, p.top_z + 10)),
+                xlabel="X (mm)", ylabel="Z (mm)")
     section.set_aspect("equal")
     section.spines[["top", "right"]].set_visible(False)
-    section.set_title("XZ bin section + original button side view\nCut through clip slots", fontsize=12)
+    section_title = "Cut through finger openings" if p.exposed_flange else "Cut through clip slots"
+    section.set_title(f"XZ bin section + original button side view\n{section_title}", fontsize=12)
     # Show the exact source alongside the section, including the real clip
     # silhouette and dimension lines that cannot be inferred from a YZ slice.
     drawing = Path(__file__).resolve().parent / "docs" / "obsf30-dimensions.jpg"
     side_view.imshow(plt.imread(drawing))
     side_view.axis("off")
     side_view.set_title("Actual button side view\nExact source dimension drawing", fontsize=13, pad=8)
+    height_note = "Exposed flange" if p.exposed_flange else f"{p.nominal_z:g} mm stacking pitch"
     fig.text(0.5, 0.06,
              f"41.5 × 41.5 × {p.total_z:g} mm overall  |  "
-             f"{p.nominal_z:g} mm stacking pitch  |  PETG · 0.4 mm nozzle · 0.2 mm layers",
+             f"{height_note}  |  PETG · 0.4 mm nozzle · 0.2 mm layers",
              ha="center", fontsize=11, color="#354456")
-    fig.text(0.5, 0.025, "Upper right: original side view in the clip slots. Lower right: CAD section through the flange support.",
+    fig.text(0.5, 0.025, "The lower-right CAD section shows the ledges that support the button.",
              ha="center", fontsize=10, color="#59687a")
     fig.subplots_adjust(left=0.05, right=0.98, bottom=0.12, top=0.94, wspace=0.15, hspace=0.38)
     fig.savefig(path, dpi=160, facecolor=fig.get_facecolor())

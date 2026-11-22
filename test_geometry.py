@@ -89,3 +89,15 @@ def test_shaped_reference_matches_dimensioned_extents():
     assert bounds.zmin == pytest.approx(p.tip_z, abs=0.001)
     assert bounds.zmax == pytest.approx(p.top_z, abs=0.001)
     assert bounds.zlen == pytest.approx(38.2, abs=0.001)
+
+
+def test_exposed_flange_stops_at_rim_and_can_be_lifted():
+    p = Parameters(height_u=6, exposed_flange=True)
+    model = make_bin(p)
+    reference = button_reference(p)
+    assert model.BoundingBox().zmax == pytest.approx(p.seat_z, abs=0.001)
+    assert p.top_z - model.BoundingBox().zmax == pytest.approx(6.5, abs=0.001)
+    assert p.tip_z - p.floor_z == pytest.approx(3.5)
+    assert model.intersect(reference.translate((0, 0, -0.2))).Volume() > 1e-6
+    for lift in (0, 0.5, 1, 3, 7, 15, 25, 35):
+        assert model.intersect(reference.translate((0, 0, lift))).Volume() < 1e-6

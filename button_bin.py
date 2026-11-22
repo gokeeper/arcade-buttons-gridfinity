@@ -37,6 +37,7 @@ class Parameters:
     finger_depth: float = 4.5
     support_height: float = 15.0
     entry_chamfer: float = 0.3
+    exposed_flange: bool = False
 
     @property
     def button_height(self) -> float:
@@ -56,15 +57,21 @@ class Parameters:
 
     @property
     def total_z(self) -> float:
+        if self.exposed_flange:
+            return self.nominal_z
         return self.nominal_z + 3.8
 
     @property
     def top_z(self) -> float:
+        if self.exposed_flange:
+            return self.seat_z + self.top_above_flange
         return self.nominal_z - self.top_clearance
 
     @property
     def seat_z(self) -> float:
-        return self.top_z - self.top_above_flange
+        if self.exposed_flange:
+            return self.nominal_z
+        return self.nominal_z - self.top_clearance - self.top_above_flange
 
     @property
     def tip_z(self) -> float:
@@ -72,6 +79,8 @@ class Parameters:
 
     def validate(self) -> None:
         values = asdict(self)
+        if not isinstance(values.pop("exposed_flange"), bool):
+            raise ValueError("exposed_flange must be a boolean.")
         if any(not isinstance(v, (int, float)) or not (0 < v < 1000)
                for v in values.values()):
             raise ValueError("All parameters must be finite, positive millimetres or units.")
@@ -83,7 +92,7 @@ class Parameters:
             raise ValueError("Button cap must fit above and inside the fixed flange.")
         if self.tip_z - self.floor_z < 1.0 - 1e-8:
             raise ValueError("Need at least 1 mm below the terminal tips; increase height_u.")
-        if self.top_clearance < 2:
+        if not self.exposed_flange and self.top_clearance < 2:
             raise ValueError("Need at least 2 mm above the button for this stacking socket.")
         if not 1.0 <= self.wall < 3.75:
             raise ValueError("Wall thickness must be at least 1 and less than 3.75 mm.")
@@ -100,7 +109,7 @@ class Parameters:
         inner_half = (41.5 - 2 * self.wall) / 2
         if self.finger_offset + self.finger_diameter / 2 >= inner_half:
             raise ValueError("Finger wells must remain inside the bin walls.")
-        if self.flange_diameter + self.flange_clearance >= 36.3:
+        if not self.exposed_flange and self.flange_diameter + self.flange_clearance >= 36.3:
             raise ValueError("Flange recess must fit below the stacking socket.")
         if self.clip_span >= 41.5 - 2 * self.wall:
             raise ValueError("Clip relief must remain inside the walls.")
@@ -172,6 +181,15 @@ def make_bin(p: Parameters = Parameters()) -> cq.Shape:
     model = shell(p)
     for cutter in cradle_cutters(p):
         model = model.cut(cutter)
+
+    if p.exposed_flange:
+        # Open both X sides at the top. The flange bridges these finger
+        # cutouts and rests on the perpendicular Y ledges.
+        finger_access = cq.Solid.makeBox(
+            43, p.finger_diameter, p.finger_depth + 1,
+            cq.Vector(-21.5, -p.finger_diameter / 2, p.seat_z - p.finger_depth),
+        )
+        return model.cut(finger_access).clean()
 
     # Above the recessed button, reopen the cavity and retain a full stacking lip.
     w = 41.5 - 2 * p.wall
@@ -254,6 +272,10 @@ def button_reference(p: Parameters) -> cq.Shape:
     body = cylinder(barrel_d, barrel_bottom, p.seat_z)
     housing = cq.Solid.makeBox(p.body_diameter, 14, barrel_bottom - p.switch_bottom_z + 0.1,
                                cq.Vector(-p.body_diameter / 2, -7, p.switch_bottom_z))
+    # The drawing's body diameter includes the lower housing. Clip the
+    # illustrative housing corners to that envelope.
+    housing = housing.intersect(cylinder(p.body_diameter, p.switch_bottom_z,
+                                         barrel_bottom + 0.1))
     neck_bottom = p.switch_bottom_z - 4.6
     neck = cq.Solid.makeBox(6, 8, 4.7, cq.Vector(-3, -4, neck_bottom))
     model = flange.fuse(cap, body, housing, neck)
@@ -283,15 +305,18 @@ def main() -> None:
     parser.add_argument("--output", type=Path, default=Path("output"))
     parser.add_argument("--config", type=Path, help="JSON overrides for Parameters fields")
     args = parser.parse_args()
-    overrides = json.loads(args.config.read_text()) if args.config else {}
+    overrides = (json.loads(args.config.read_text()) if args.config
+                 else {"height_u": 6, "exposed_flange": True})
     if "button_height" in overrides:
         parser.error("button_height is now derived. Replace that legacy field with "
-                     "flange_to_terminal=31.7 and top_above_flange=6.5; use height_u >= 7.")
+                     "flange_to_terminal=31.7 and top_above_flange=6.5.")
     p = Parameters(**overrides)
     p.validate()
     args.output.mkdir(parents=True, exist_ok=True)
     model = make_bin(p)
     name = f"obsf30_1x1_{p.height_u}u"
+    suffix = "_exposed" if p.exposed_flange else ""
+    name += suffix
     export_pair(model, args.output / name)
     shapes = {name: model}
     for opening in (30.6, 31.0, 31.4):
@@ -304,14 +329,15 @@ def main() -> None:
     assembly.add(model, name="bin", color=cq.Color(0.15, 0.5, 0.65))
     assembly.add(button_reference(p), name="button_visual_reference_approximate_details",
                  color=cq.Color(0.95, 0.55, 0.15))
-    assembly.add(foot().translate((0, 0, p.nominal_z)), name="upper_bin_foot",
-                 color=cq.Color(0.5, 0.5, 0.5, 0.5))
-    assembly.export(str(args.output / "inspection_assembly.step"))
-    (args.output / "parameters.json").write_text(json.dumps(asdict(p), indent=2) + "\n")
+    if not p.exposed_flange:
+        assembly.add(foot().translate((0, 0, p.nominal_z)), name="upper_bin_foot",
+                     color=cq.Color(0.5, 0.5, 0.5, 0.5))
+    assembly.export(str(args.output / f"inspection_assembly{suffix}.step"))
+    (args.output / f"parameters{suffix}.json").write_text(json.dumps(asdict(p), indent=2) + "\n")
 
     from validate_models import validate_all
     report = validate_all(p, shapes, args.output)
-    (args.output / "validation.json").write_text(json.dumps(report, indent=2) + "\n")
+    (args.output / f"validation{suffix}.json").write_text(json.dumps(report, indent=2) + "\n")
     from preview import render_dimension_drawing, render_preview
     render_preview(model, p, args.output / "preview.png")
     render_dimension_drawing(p, args.output / "button_dimensions.png")

@@ -1,10 +1,10 @@
 # Arcade Buttons × Gridfinity
 
-Parametric 3D-printable storage for arcade buttons, starting with
-**one Sanwa OBSF-30 snap-in button in a 1×1×7U Gridfinity bin**.
-The button drops into a flange cradle, with its switch and bare terminals
-suspended above the floor. Opposed clip reliefs prevent intentional snap-in
-retention; diagonal finger wells provide access beneath the fixed flange.
+Parametric 3D-printable storage for one Sanwa OBSF-30 snap-in button.
+The **1×1×6U holder** seats the flange at the top. The button rises **6.5 mm
+above the rim** and the flange overhangs two open side cutouts for lifting.
+The terminals hang **3.5 mm above the floor**. Use the recessed 1×1×7U bin
+when loaded stacking matters.
 
 **Status: digitally validated prototype; physical fit has not been verified.**
 Start with the [31.0 mm fit coupon](output/fit_coupon_31p0.stl) before printing
@@ -12,7 +12,7 @@ the full bin. OBSF-24 models and inserts for existing bins are planned.
 
 ![CAD preview and section](output/preview.png)
 
-The upper-right panel shows the original side view in a cut through the clip slots.
+The upper-right panel shows the original side view in a cut through the finger openings.
 The lower-right detail cuts through the supporting ledge at 90° to the slots.
 The red line marks the 0.80 mm radial contact between the flange and the seat.
 The original dimension drawing appears at lower left.
@@ -20,12 +20,15 @@ The original dimension drawing appears at lower left.
 ## Files
 
 - [Saved design plan](PLAN.md)
-- [Bin STL](output/obsf30_1x1_7u.stl) and [STEP](output/obsf30_1x1_7u.step)
+- Exposed-flange holder [STL](output/obsf30_1x1_6u_exposed.stl) and [STEP](output/obsf30_1x1_6u_exposed.step)
+- Recessed stacking bin [STL](output/obsf30_1x1_7u.stl) and [STEP](output/obsf30_1x1_7u.step)
 - Fit-coupon STLs: [30.6 mm](output/fit_coupon_30p6.stl),
   [31.0 mm](output/fit_coupon_31p0.stl), [31.4 mm](output/fit_coupon_31p4.stl)
 - [Inspection assembly](output/inspection_assembly.step): bin, shaped button
   reference, and the foot of a bin stacked above it. **Do not print this assembly.**
-- [Parameters used](output/parameters.json) and [validation results](output/validation.json)
+- Exposed holder [inspection assembly](output/inspection_assembly_exposed.step),
+  [parameters](output/parameters_exposed.json), and [validation](output/validation_exposed.json)
+- Stacking bin [parameters](output/parameters.json) and [validation](output/validation.json)
 - [Editable CadQuery source](button_bin.py)
 
 ## Button drawing and dimensions
@@ -46,10 +49,9 @@ These dimensions come from the [exact reference drawing](https://m.media-amazon.
 | Flange underside to terminal tips | 31.7 |
 | **Overall top-to-tip height** | **38.2 = 6.5 + 31.7** |
 
-**31.7 mm is measured from the flange underside.** The earlier 6U model
-mistakenly treated it as the overall height. Those exports have been removed;
-use the corrected 7U model. With the existing floor and 2 mm top clearance,
-the old 6U bin would have 5 mm of terminal/floor interference.
+**31.7 mm is measured from the flange underside.** The exposed 6U holder
+puts that underside at the rim. The recessed design needs 7U to clear both
+the floor and the upper bin.
 
 The CAD reference now shows the rounded fixed flange, moving cap, barrel,
 retention clips, lower housing, and terminal blades. Its dimensioned extents
@@ -66,7 +68,12 @@ Source: [Amazon-hosted dimension image](https://m.media-amazon.com/images/I/51oV
 
 </details>
 
-## Bin fit and dimensions
+## Holder and stacking bin dimensions
+
+The exposed holder measures 41.5 × 41.5 × 42 mm. Its side cutouts are 10 mm
+wide and 4.5 mm deep. The Gridfinity foot fits a baseplate, and the exposed
+button occupies the space above the holder. The table below describes the
+recessed model for stacking.
 
 | Feature | Millimetres |
 |---|---:|
@@ -87,7 +94,7 @@ Source: [Amazon-hosted dimension image](https://m.media-amazon.com/images/I/51oV
 
 The model derives overall button height from `top_above_flange` (6.5 mm) plus
 `flange_to_terminal` (31.7 mm). The fixed flange underside rests on the cradle;
-the terminals end 2 mm above the interior floor. A standard 6U configuration
+the terminals end 2 mm above the interior floor. A recessed 6U configuration
 is rejected by the parameter checks.
 
 The relief dimensions are initial allowances, not measured dimensions of the
@@ -123,8 +130,8 @@ needs checking.
    overhang preview and layer paths; the cradle underside is a 15 mm tall gradual
    loft, checked to stay within 46° from vertical on its tessellated underside.
 6. Check baseplate fit, flange support, finger access, terminal clearance,
-   and vertical removal. Stack an empty bin above the loaded bin and confirm
-   it seats without touching or actuating the button.
+   and vertical removal. For the recessed 7U variant, stack an empty bin
+   above the loaded bin and confirm it seats without actuating the button.
 
 The coupons test the local body/flange/clip fit. The full bin is required to
 qualify reach, terminal protection, and stacking. This is a storage holder;
@@ -140,16 +147,20 @@ Install dependencies into that environment if needed:
 /home/gkp/codes/.headless/bin/pip install -r requirements.txt
 ```
 
-Run from the repository root:
+Run from the repository root to generate the exposed 6U holder and its preview.
 
 ```bash
 /home/gkp/codes/.headless/bin/python button_bin.py
 ```
 
-Override any field of `Parameters` with a JSON file, for example:
+Pass a JSON configuration to customize the holder. Include both
+`"height_u": 6` and `"exposed_flange": true` for the exposed version. A config
+without these fields uses the recessed 7U default. For example:
 
 ```json
 {
+  "height_u": 6,
+  "exposed_flange": true,
   "body_opening": 31.4,
   "clip_span": 34.4
 }
@@ -173,14 +184,16 @@ Overall height is now a derived value, not a configurable field.
 ## Validation
 
 Every generation checks connected valid solids, STEP round trips, exported STL edge
-closure and winding, button-envelope removal, and stacking interference.
+closure and winding, flange support, and button-envelope removal. It also checks
+side access for the exposed holder and stacking clearance for the recessed bin.
 The button envelope deliberately overestimates the lower body but **omits clips**;
 these checks cannot establish physical clip fit or compensate for printer error.
 
 The geometry regression suite checks unsafe parameter combinations, cradle
 overhangs, flange support, continuous clip reliefs, a larger 8U variant, and
 the exact drawing's vertical datums. It rejects the unsafe 6U case and checks
-the shaped reference's height. The suite contains **16 passing tests**. To run it:
+the shaped reference's height. It also checks the exposed flange's position
+and removal path. To run the suite:
 
 ```bash
 /home/gkp/codes/.headless/bin/pip install pytest

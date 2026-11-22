@@ -1,0 +1,75 @@
+{
+  "obsf30_1x1_6u_exposed": {
+    "valid_single_solid": true,
+    "step_roundtrip": true,
+    "dimensions_mm": [
+      41.5,
+      41.5,
+      42.0
+    ],
+    "cad_volume_mm3": 23871.39,
+    "triangles": 10806,
+    "vertices": 5405,
+    "watertight": true,
+    "consistent_winding": true,
+    "volume_mm3": 23887.606
+  },
+  "fit_coupon_30p6": {
+    "valid_single_solid": true,
+    "step_roundtrip": true,
+    "dimensions_mm": [
+      41.5,
+      49.25,
+      3.6
+    ],
+    "cad_volume_mm3": 3244.994,
+    "triangles": 13400,
+    "vertices": 6700,
+    "watertight": true,
+    "consistent_winding": true,
+    "volume_mm3": 3245.54
+  },
+  "fit_coupon_31p0": {
+    "valid_single_solid": true,
+    "step_roundtrip": true,
+    "dimensions_mm": [
+      41.5,
+      49.25,
+      3.6
+    ],
+    "cad_volume_mm3": 3215.279,
+    "triangles": 9542,
+    "vertices": 4771,
+    "watertight": true,
+    "consistent_winding": true,
+    "volume_mm3": 3215.833
+  },
+  "fit_coupon_31p4": {
+    "valid_single_solid": true,
+    "step_roundtrip": true,
+    "dimensions_mm": [
+      41.5,
+      49.25,
+      3.6
+    ],
+    "cad_volume_mm3": 3184.956,
+    "triangles": 7008,
+    "vertices": 3504,
+    "watertight": true,
+    "consistent_winding": true,
+    "volume_mm3": 3185.51
+  },
+  "clearance": {
+    "button_overall_height_mm": 38.2,
+    "flange_to_terminal_mm": 31.7,
+    "terminal_projection_below_switch_mm": 12.5,
+    "flange_seat_z_mm": 42.0,
+    "terminal_tip_z_mm": 10.3,
+    "terminal_to_floor_mm": 3.5,
+    "button_bin_interference_mm3": 0,
+    "button_removal_path_clear": true,
+    "clips_require_physical_fit_test": true,
+    "vertical_datums_from_exact_drawing": true,
+    "button_above_rim_mm": 6.5
+  }
+}
