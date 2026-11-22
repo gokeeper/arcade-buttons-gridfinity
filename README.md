@@ -7,8 +7,8 @@ The terminals hang **3.5 mm above the floor**. Use the recessed 1×1×7U bin
 when loaded stacking matters.
 
 **Status: digitally validated prototype; physical fit has not been verified.**
-Start with the [31.0 mm fit coupon](output/fit_coupon_31p0.stl) before printing
-the full bin. OBSF-24 models and inserts for existing bins are planned.
+Use a fit coupon before printing a full bin. The separate lid prototypes below
+let you reuse an empty bin. OBSF-24 models are planned.
 
 ![CAD preview and section](output/preview.png)
 
@@ -30,6 +30,52 @@ The original dimension drawing appears at lower left.
   [parameters](output/parameters_exposed.json), and [validation](output/validation_exposed.json)
 - Stacking bin [parameters](output/parameters.json) and [validation](output/validation.json)
 - [Editable CadQuery source](button_bin.py)
+
+## Drop-in lids for existing 1×1 bins
+
+Try the [30.6 mm lid](output/obsf30_1x1_lid_30p6.stl) first. The
+[30.2 mm lid](output/obsf30_1x1_lid_30p2.stl) trims another 0.4 mm off the
+body opening. These prototypes have a 2.4 mm plate and a 1.2 mm tapered
+locator. The button flange rests on top, and smaller finger holes leave
+more material beneath it. Align the clips with the slots for vertical
+insertion and removal. The button and lid lift out by hand.
+
+The locator was sized for a square **40.3 mm opening at the rim** and a
+**37.9 mm opening 1.2 mm below it**, with 0.4 mm clearance per side. These
+are the dimensions of this project's stacking rim. Check your bin before
+printing. With the default plate thickness, allow at least **30.5 mm**
+from the bin rim to the first obstruction below the terminal tips.
+An exposed button occupies the space above the bin.
+
+### ABDELat Ultimate Gridfinity 1×1 bin
+
+For the supplied 38.55 mm tall bin from MakerWorld profile 49320, use the
+locators fitted to its rounded rim:
+
+- Start with the [30.6 mm STL](output/obsf30_1x1_lid_30p6_mw47599.stl) · [STEP](output/obsf30_1x1_lid_30p6_mw47599.step).
+- Try the [30.2 mm STL](output/obsf30_1x1_lid_30p2_mw47599.stl) · [STEP](output/obsf30_1x1_lid_30p2_mw47599.step) if the button still feels loose.
+
+The supplied mesh leaves about 2 mm under the terminal tips when the lid
+is seated. Other heights in the 1×1 profile need their own depth check.
+[MakerWorld source](https://makerworld.com/en/models/47599-ultimate-gridfinity-bins-collection-parametric#profileId-49320)
+
+```bash
+/home/gkp/codes/.headless/bin/python button_lid.py --rim-profile makerworld-47599
+```
+
+Print flat with the wide, flat face on the bed and the tapered locator
+pointing up. Flip the lid in the slicer to get this orientation.
+
+[30.6 mm STEP](output/obsf30_1x1_lid_30p6.step) ·
+[30.2 mm STEP](output/obsf30_1x1_lid_30p2.step)
+
+To fit a different square bin rim, regenerate with its measured opening
+widths and corner radius:
+
+```bash
+/home/gkp/codes/.headless/bin/python button_lid.py --opening 30.6 \
+  --rim-opening 40.3 --lower-opening 37.9 --rim-corner-radius 3.15
+```
 
 ## Button drawing and dimensions
 
@@ -101,7 +147,7 @@ The relief dimensions are initial allowances, not measured dimensions of the
 uncompressed clips. The button must be oriented with its two clips pointing
 along the long direction of the relief opening (X). No clip compression should
 be needed. Clear, silent, RG, screw-in, and other brands are not qualified by
-this first model. OBSF-24 and inserts for existing bins are planned follow-ups.
+this first model. OBSF-24 and lids for other bin profiles are planned follow-ups.
 
 The Gridfinity base follows the common 4.75 mm foot profile and a 41.5 mm body
 on a 42 mm grid. The stacking socket uses a 4.4 mm theoretical profile trimmed
@@ -203,6 +249,6 @@ and removal path. To run the suite:
 ## Planned models
 
 - Sanwa OBSF-24 with its own button dimensions.
-- Removable inserts fitted to measured bin interiors, including the
+- Lid fits for additional bin profiles, including the
   [Simple Gridfinity Box](https://makerworld.com/en/models/784676-simple-gridfinity-box-stackable-many-sizes).
 - Larger layouts using the validated button cradle on the 42 mm grid.

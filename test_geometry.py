@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 from button_bin import Parameters, button_envelope, button_reference, foot, make_bin
+from button_lid import LOCATOR_DEPTH, PLATE_THICKNESS, make_lid
 
 
 @pytest.mark.parametrize("overrides", [
@@ -101,3 +102,18 @@ def test_exposed_flange_stops_at_rim_and_can_be_lifted():
     assert model.intersect(reference.translate((0, 0, -0.2))).Volume() > 1e-6
     for lift in (0, 0.5, 1, 3, 7, 15, 25, 35):
         assert model.intersect(reference.translate((0, 0, lift))).Volume() < 1e-6
+
+
+@pytest.mark.parametrize("opening", [30.6, 30.2])
+def test_lid_sits_on_reference_rim_and_clears_button(opening, default_bin):
+    p = Parameters()
+    lid = make_lid(opening)
+    seated = lid.translate((0, 0, p.total_z - LOCATOR_DEPTH))
+    assert default_bin.intersect(seated).Volume() < 1e-6
+    assert default_bin.intersect(seated.translate((0, 0, -0.2))).Volume() > 1e-6
+
+    seat = LOCATOR_DEPTH + PLATE_THICKNESS
+    reference = button_reference(p).translate((0, 0, seat - p.seat_z))
+    for lift in (0, 1, 3, 7, 15, 25, 35):
+        assert lid.intersect(reference.translate((0, 0, lift))).Volume() < 1e-6
+    assert lid.intersect(reference.translate((0, 0, -0.2))).Volume() > 1e-6
