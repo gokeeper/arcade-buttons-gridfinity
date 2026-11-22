@@ -77,7 +77,10 @@ def draw_section(ax, shape: cq.Shape, color: str) -> None:
 
 
 def render_preview(model: cq.Shape, p: Parameters, path: Path) -> None:
-    fig, (ax, section) = plt.subplots(1, 2, figsize=(14, 8), facecolor="#f4f6f8")
+    fig, (ax, section, side_view) = plt.subplots(
+        1, 3, figsize=(20, 8.5), facecolor="#f4f6f8",
+        gridspec_kw={"width_ratios": [1.0, 1.1, 1.0]},
+    )
     ax.imshow(rasterize(model))
     ax.axis("off")
     ax.set_title(f"OBSF-30 · 1×1×{p.height_u}U\nActual CAD geometry", fontsize=13, pad=8)
@@ -99,13 +102,19 @@ def render_preview(model: cq.Shape, p: Parameters, path: Path) -> None:
     section.set_aspect("equal")
     section.spines[["top", "right"]].set_visible(False)
     section.set_title("YZ section: bin, shaped button reference, upper foot\nClips lie outside the section plane", fontsize=12)
+    # Show the exact source alongside the section, including the real clip
+    # silhouette and dimension lines that cannot be inferred from a YZ slice.
+    drawing = Path(__file__).resolve().parent / "docs" / "obsf30-dimensions.jpg"
+    side_view.imshow(plt.imread(drawing))
+    side_view.axis("off")
+    side_view.set_title("Actual button side view\nExact source dimension drawing", fontsize=13, pad=8)
     fig.text(0.5, 0.06,
              f"41.5 × 41.5 × {p.total_z:g} mm overall  |  "
              f"{p.nominal_z:g} mm stacking pitch  |  PETG · 0.4 mm nozzle · 0.2 mm layers",
              ha="center", fontsize=11, color="#354456")
-    fig.text(0.5, 0.025, "Source dimensions applied; undimensioned button details are approximate. Physical fit still needs checking.",
+    fig.text(0.5, 0.025, "CAD reference details are approximate; the original drawing is shown at right. Physical fit still needs checking.",
              ha="center", fontsize=10, color="#59687a")
-    fig.subplots_adjust(left=0.02, right=0.98, bottom=0.15, top=0.87, wspace=0.12)
+    fig.subplots_adjust(left=0.015, right=0.99, bottom=0.15, top=0.87, wspace=0.18)
     fig.savefig(path, dpi=160, facecolor=fig.get_facecolor())
     plt.close(fig)
 
