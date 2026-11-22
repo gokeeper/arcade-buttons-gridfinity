@@ -14,7 +14,7 @@ the full bin. OBSF-24 models and inserts for existing bins are planned.
 
 The middle panel overlays the original button side-view linework on the bin's
 XZ section, aligned to the button top, flange underside, lower housing plane,
-and terminal tips. This is a side-view projection for visual comparison;
+and terminal tips. The cut passes through the clip reliefs. Orange shows the supporting ledges projected from the perpendicular section. This is a side-view projection for visual comparison;
 physical clip fit still needs checking. The full source drawing appears at right.
 
 ## Files

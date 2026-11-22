@@ -134,12 +134,18 @@ def render_preview(model: cq.Shape, p: Parameters, path: Path) -> None:
     section.annotate(f"{p.tip_z - p.floor_z:.1f} mm beneath terminals",
                      xy=(0, (p.tip_z + p.floor_z) / 2), xytext=(-26, 2), fontsize=10,
                      arrowprops={"arrowstyle": "->", "color": "#354456"})
-    section.annotate("Flange underside", xy=(16.6, p.seat_z), xytext=(18, p.seat_z - 8),
-                     fontsize=10, arrowprops={"arrowstyle": "->", "color": "#354456"})
+    # Project the perpendicular seat section into the same view. Only show
+    # material directly beneath the flange, leaving the clip relief visible.
+    seat_band = cq.Solid.makeBox(0.04, 50, 1.4, cq.Vector(-0.02, -25, p.seat_z - 1.4))
+    bearing = model.intersect(seat_band).rotate((0, 0, 0), (0, 0, 1), 90)
+    draw_section(section, bearing, "#bd641e")
+    section.annotate("Flange supports\n(projected from Y)", xy=(16.2, p.seat_z - 0.3),
+                     xytext=(19, p.seat_z - 9), fontsize=9,
+                     arrowprops={"arrowstyle": "->", "color": "#844510"})
     section.set(xlim=(-28, 36), ylim=(-2, p.total_z + 7), xlabel="X (mm)", ylabel="Z (mm)")
     section.set_aspect("equal")
     section.spines[["top", "right"]].set_visible(False)
-    section.set_title("XZ bin section + original button side view\nSource linework aligned to dimensioned planes", fontsize=12)
+    section.set_title("XZ bin section + original button side view\nOrange shows the perpendicular flange seat", fontsize=12)
     # Show the exact source alongside the section, including the real clip
     # silhouette and dimension lines that cannot be inferred from a YZ slice.
     drawing = Path(__file__).resolve().parent / "docs" / "obsf30-dimensions.jpg"
