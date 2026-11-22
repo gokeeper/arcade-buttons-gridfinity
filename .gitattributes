@@ -1,0 +1,4 @@
+# Preserve generated CAD assets and keep diffs focused on editable sources.
+*.step binary
+*.stl binary
+*.png binary

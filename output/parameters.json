@@ -1,0 +1,19 @@
+{
+  "height_u": 6,
+  "wall": 1.6,
+  "floor_z": 6.8,
+  "body_diameter": 29.5,
+  "body_opening": 31.0,
+  "flange_diameter": 33.2,
+  "flange_clearance": 1.0,
+  "button_height": 31.7,
+  "top_above_flange": 6.5,
+  "top_clearance": 2.0,
+  "clip_span": 34.0,
+  "clip_width": 8.0,
+  "finger_diameter": 10.0,
+  "finger_offset": 12.0,
+  "finger_depth": 4.5,
+  "support_height": 15.0,
+  "entry_chamfer": 0.3
+}
