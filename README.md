@@ -31,7 +31,23 @@ The original dimension drawing appears at lower left.
 - Stacking bin [parameters](output/parameters.json) and [validation](output/validation.json)
 - [Editable CadQuery source](button_bin.py)
 
-## Drop-in lids for existing 1×1 bins
+## Drop-in lids for existing bins
+
+### Flush eight-button lid for the 2×4 bin
+
+The [2×4 lid STL](output/obsf30_2x4_flush_snap_lid_30p5_mw47599.stl)
+and [STEP](output/obsf30_2x4_flush_snap_lid_30p5_mw47599.step) fit the
+rim of the supplied `2x4x7u.stl`. The 79 × 163 × 3.2 mm plate seats
+flush and holds eight OBSF-30 buttons on 42 mm centers. Each 30.5 mm
+opening has an underside recess that leaves 2.4 mm for the clips.
+
+Print in PETG with the flat button-facing side on the bed and the
+recessed underside facing up. Lift the loaded lid out to squeeze the
+clips from underneath.
+
+```bash
+/home/gkp/codes/.headless/bin/python button_lid.py --flush-snap 2x4
+```
 
 ### Flush 30.5 mm snap-in lid for ABDELat Ultimate Gridfinity
 

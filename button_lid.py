@@ -1,4 +1,4 @@
-"""Generate a thin OBSF-30 holder that sits on a 1×1 bin rim."""
+"""Generate OBSF-30 lids for Gridfinity bin rims."""
 
 import argparse
 from pathlib import Path
@@ -17,7 +17,8 @@ FLUSH_LID_THICKNESS = 3.2
 FLUSH_LID_CORNER_RADIUS = 3.0
 SNAP_OPENING = 30.5
 SNAP_RECESS_DIAMETER = 34.6
-SNAP_LID_FILENAME = "obsf30_1x1_flush_snap_lid_30p5_mw47599"
+GRID_PITCH = 42.0
+FLUSH_LAYOUTS = {"1x1": (1, 1), "2x4": (2, 4)}
 # Conservative straight taper fitted inside the rounded rim of the supplied
 # ABDELat bin mesh. These are fit dimensions, not maximum rim measurements.
 RIM_PROFILES = {
@@ -67,14 +68,24 @@ def make_lid(
     return lid.clean()
 
 
-def make_flush_snap_lid() -> cq.Shape:
-    """Seat inside the MakerWorld 47599 rim and retain the button by its clips."""
-    lid = rounded_prism(FLUSH_LID_WIDTH, FLUSH_LID_CORNER_RADIUS, 0, FLUSH_LID_THICKNESS)
+def make_flush_snap_lid(layout: str = "1x1") -> cq.Shape:
+    """Seat inside the MakerWorld 47599 rim with one snap-in bore per cell."""
+    columns, rows = FLUSH_LAYOUTS[layout]
+    width = FLUSH_LID_WIDTH + (columns - 1) * GRID_PITCH
+    length = FLUSH_LID_WIDTH + (rows - 1) * GRID_PITCH
+    lid = (cq.Workplane("XY").rect(width, length).extrude(FLUSH_LID_THICKNESS)
+           .edges("|Z").fillet(FLUSH_LID_CORNER_RADIUS).val())
     recess_depth = FLUSH_LID_THICKNESS - PLATE_THICKNESS
-    return lid.cut(
-        cylinder(SNAP_OPENING, -1, FLUSH_LID_THICKNESS + 1),
-        cylinder(SNAP_RECESS_DIAMETER, -1, recess_depth),
-    ).clean()
+    cuts = []
+    for column in range(columns):
+        x = (column - (columns - 1) / 2) * GRID_PITCH
+        for row in range(rows):
+            y = (row - (rows - 1) / 2) * GRID_PITCH
+            cuts.extend((
+                cylinder(SNAP_OPENING, -1, FLUSH_LID_THICKNESS + 1, x, y),
+                cylinder(SNAP_RECESS_DIAMETER, -1, recess_depth, x, y),
+            ))
+    return lid.cut(*cuts).clean()
 
 
 def export_lid(lid: cq.Shape, path: Path) -> None:
@@ -88,8 +99,8 @@ def export_lid(lid: cq.Shape, path: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--flush-snap", action="store_true",
-                        help="Export the fixed 30.5 mm flush snap-in lid for MakerWorld 47599.")
+    parser.add_argument("--flush-snap", nargs="?", const="1x1", choices=FLUSH_LAYOUTS,
+                        help="Export a 30.5 mm flush snap-in lid for MakerWorld 47599 (default: 1x1).")
     parser.add_argument("--opening", type=float, choices=(30.2, 30.6), action="append",
                         help="Body opening in mm. Omit to export both sizes.")
     parser.add_argument("--rim-profile", choices=RIM_PROFILES)
@@ -106,7 +117,9 @@ def main() -> None:
             args.rim_corner_radius, args.clearance,
         )):
             parser.error("--flush-snap uses fixed dimensions. Only --output can be combined with it.")
-        export_lid(make_flush_snap_lid(), args.output / SNAP_LID_FILENAME)
+        layout = args.flush_snap
+        name = f"obsf30_{layout}_flush_snap_lid_30p5_mw47599"
+        export_lid(make_flush_snap_lid(layout), args.output / name)
         return
 
     profile = args.rim_profile or "reference"

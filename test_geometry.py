@@ -132,3 +132,18 @@ def test_flush_snap_lid_has_single_bore_and_recess():
     # The diagonal finger holes from the slotted version are filled in.
     for sign in (-1, 1):
         assert lid.isInside(cq.Vector(sign * 13, sign * 13, 2))
+
+
+def test_2x4_flush_snap_lid_places_eight_buttons_on_grid():
+    lid = make_flush_snap_lid("2x4")
+    assert lid.isValid() and len(lid.Solids()) == 1
+    bounds = lid.BoundingBox()
+    assert (bounds.xlen, bounds.ylen, bounds.zlen) == pytest.approx((79, 163, 3.2))
+
+    centers = {(x, y) for x in (-21, 21) for y in (-63, -21, 21, 63)}
+    for face, radius in ((max(lid.Faces(), key=lambda f: f.Center().z), 15.25),
+                         (min(lid.Faces(), key=lambda f: f.Center().z), 17.3)):
+        holes = [wire.Edges()[0] for wire in face.innerWires()]
+        assert len(holes) == 8
+        assert {(round(edge.Center().x, 6), round(edge.Center().y, 6)) for edge in holes} == centers
+        assert [edge.radius() for edge in holes] == pytest.approx([radius] * 8)
