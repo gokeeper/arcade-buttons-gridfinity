@@ -4,7 +4,7 @@
 arcade buttons in existing Gridfinity bins. To remove a button, lift the lid,
 squeeze the clips from underneath, and push the button out.
 
-![Rim-stop lids for five OBSF-24 buttons on a 1×4 bin, four OBSF-30 buttons on a 1×4 bin, and eight OBSF-30 buttons on a 2×4 bin](output/preview.png)
+![Rim-stop lids for five OBSF-24 buttons on a 1×4 bin, four OBSF-30 buttons on a 1×4 bin, and eight OBSF-30 buttons on a 2×4 bin](output/preview.png?v=rim-stop-lids)
 
 The designs are digitally validated prototypes. Printed fit and clip
 engagement still need a physical check.
