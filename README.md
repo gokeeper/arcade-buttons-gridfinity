@@ -1,7 +1,9 @@
 # Arcade Buttons × Gridfinity
 
-Drop-in rim-stop lids for storing Sanwa OBSF-24 and OBSF-30 arcade buttons
-in existing Gridfinity bins.
+Gridfinity storage for Sanwa OBSF-24 and OBSF-30 arcade buttons and
+35 mm joystick ball tops. The 1×4 button lids come with an optional
+[lift tab](#lift-tab-lids). The [5U ball-top bin](#joystick-ball-top-bin)
+holds four balls in separate compartments.
 
 ![Rim-stop lids for five OBSF-24 buttons on a 1×4 bin, four OBSF-30 buttons on a 1×4 bin, and eight OBSF-30 buttons on a 2×4 bin](https://raw.githubusercontent.com/gokeeper/arcade-buttons-gridfinity/master/output/preview.png?v=rim-stop-lids)
 
@@ -13,6 +15,18 @@ in existing Gridfinity bins.
 | 1×4 | 4 × OBSF-30 | 42 mm | [STL](output/obsf30_1x4_rim_stop_snap_lid_30p5_mw47599.stl) · [STEP](output/obsf30_1x4_rim_stop_snap_lid_30p5_mw47599.step) |
 | 2×4 | 8 × OBSF-30 | 42 mm | [STL](output/obsf30_2x4_rim_stop_snap_lid_30p5_mw47599.stl) · [STEP](output/obsf30_2x4_rim_stop_snap_lid_30p5_mw47599.step) |
 
+### Lift-tab lids
+
+The 8 mm lift tab extends the full 41.5 mm width of one short end.
+The lid measures 41.5 × 175.5 mm overall and uses the same 37 × 163 mm
+locator. Leave the tab end accessible for a fingertip below the lip.
+The tab projects into the space above the next Gridfinity cell.
+
+| Buttons | Lift-tab files |
+|---|---|
+| 5 × OBSF-24 | [STL](output/obsf24_1x4_rim_stop_snap_lid_24p3_mw47599_lift_tab_8mm.stl) · [STEP](output/obsf24_1x4_rim_stop_snap_lid_24p3_mw47599_lift_tab_8mm.step) |
+| 4 × OBSF-30 | [STL](output/obsf30_1x4_rim_stop_snap_lid_30p5_mw47599_lift_tab_8mm.stl) · [STEP](output/obsf30_1x4_rim_stop_snap_lid_30p5_mw47599_lift_tab_8mm.step) |
+
 ### Bin and button fit
 
 The lids were sized for the rounded rims on `1x4x7u.stl` and `2x4x7u.stl`
@@ -21,7 +35,7 @@ all four sides of the rim, raising the button mounting face by 1.2 mm.
 A 2 mm locator centers the lid inside the opening.
 [Bin collection](https://makerworld.com/en/models/47599-ultimate-gridfinity-bins-collection-parametric)
 
-| Bin footprint | Lid footprint | Rounded locator footprint |
+| Bin footprint | Standard lid footprint | Rounded locator footprint |
 |---|---:|---:|
 | 1×4 | 41.5 × 167.5 mm | 37 × 163 mm |
 | 2×4 | 83.5 × 167.5 mm | 79 × 163 mm |
@@ -56,6 +70,23 @@ your bin before seating the loaded lid.
 The geometry was verified digitally. Printed rim fit and clip engagement
 still need a physical check.
 
+## Joystick ball-top bin
+
+The **1×4×5U bin** has three 1.8 mm dividers and paired finger scoops.
+About 10.7 mm of each seated ball sits above the rim so you can pinch it
+from the sides. Print upright with the Gridfinity foot on the bed.
+[Print-ready STL](output/balltop_1x4_5u_35mm.stl) ·
+[Faceted STEP](output/balltop_1x4_5u_35mm.step)
+
+The STL and STEP adapt ABDELat's Ultimate Gridfinity 1×4×7U bin by
+shortening the walls by 14 mm and adding the dividers and scoops. These
+two remix files are shared under CC BY-SA 4.0.
+[Original bin collection](https://makerworld.com/en/models/47599-ultimate-gridfinity-bins-collection-parametric) ·
+[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
+
+A 36 mm gauge cleared the straight removal path in all four positions in
+CAD. Grip comfort still needs a print check.
+
 ## Regenerate
 
 From the repository root, use the existing Python environment with
@@ -72,11 +103,22 @@ From the repository root, use the existing Python environment with
 # 1×4 lid for four OBSF-30 buttons
 /home/gkp/codes/.headless/bin/python button_lid.py --rim-stop-snap 1x4 --button obsf30
 
+# 1×4 lift-tab lids
+/home/gkp/codes/.headless/bin/python button_lid.py --rim-stop-snap 1x4 --lift-tab
+/home/gkp/codes/.headless/bin/python button_lid.py --rim-stop-snap 1x4 --button obsf30 --lift-tab
+
 # 2×4 lid for eight OBSF-30 buttons
 /home/gkp/codes/.headless/bin/python button_lid.py --rim-stop-snap 2x4
 
 # README preview
 /home/gkp/codes/.headless/bin/python preview.py
+```
+
+To rebuild the ball-top bin, use the 1×4×7U mesh from the original bin
+collection as input to the [ball-top generator](balltop_bin.py).
+
+```bash
+/home/gkp/codes/.headless/bin/python balltop_bin.py --source 1x4x7u.stl
 ```
 
 The lid generator checks that each lid is a single valid solid and that

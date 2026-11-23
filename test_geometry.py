@@ -166,13 +166,46 @@ def test_multi_button_snap_lid_places_buttons_at_expected_centers(
             assert lid.isInside(cq.Vector(x, y, 2.01))
 
 
+@pytest.mark.parametrize("button", ["obsf24", "obsf30"])
+def test_1x4_lift_tab_only_extends_one_rim_end(button):
+    original = make_flush_snap_lid("1x4", rim_stop=True, button=button)
+    lid = make_flush_snap_lid("1x4", rim_stop=True, button=button, lift_tab=True)
+    bounds = lid.BoundingBox()
+    assert (bounds.xlen, bounds.ymin, bounds.ymax, bounds.zlen) == pytest.approx(
+        (41.5, -83.75, 91.75, 3.2)
+    )
+    assert original.cut(lid).Volume() < 1e-6
+    extension = lid.cut(original)
+    assert extension.BoundingBox().zmin == pytest.approx(2.0)
+    assert extension.Volume() == pytest.approx(41.5 * 8 * 1.2)
+    assert lid.isInside(cq.Vector(20, 87, 2.6))
+    assert lid.isInside(cq.Vector(-20, 87, 2.6))
+
+
 @pytest.mark.parametrize("args, name, width, length, corner_radius, count, opening", [
-    (["--flush-snap", "2x4"], "obsf30_2x4_flush_snap_lid_30p5", 79, 163, 3, 8, 30.5),
-    (["--rim-stop-snap"], "obsf30_2x4_rim_stop_snap_lid_30p5", 83.5, 167.5, 3.75, 8, 30.5),
-    (["--rim-stop-snap", "1x4"], "obsf24_1x4_rim_stop_snap_lid_24p3", 41.5, 167.5, 3.75, 5, 24.3),
+    (
+        ["--flush-snap", "2x4"],
+        "obsf30_2x4_flush_snap_lid_30p5_mw47599", 79, 163, 3, 8, 30.5,
+    ),
+    (
+        ["--rim-stop-snap"],
+        "obsf30_2x4_rim_stop_snap_lid_30p5_mw47599", 83.5, 167.5, 3.75, 8, 30.5,
+    ),
+    (
+        ["--rim-stop-snap", "1x4"],
+        "obsf24_1x4_rim_stop_snap_lid_24p3_mw47599", 41.5, 167.5, 3.75, 5, 24.3,
+    ),
     (
         ["--rim-stop-snap", "1x4", "--button", "obsf30"],
-        "obsf30_1x4_rim_stop_snap_lid_30p5", 41.5, 167.5, 3.75, 4, 30.5,
+        "obsf30_1x4_rim_stop_snap_lid_30p5_mw47599", 41.5, 167.5, 3.75, 4, 30.5,
+    ),
+    (
+        ["--rim-stop-snap", "1x4", "--lift-tab"],
+        "obsf24_1x4_rim_stop_snap_lid_24p3_mw47599_lift_tab_8mm", 41.5, 175.5, 3.75, 5, 24.3,
+    ),
+    (
+        ["--rim-stop-snap", "1x4", "--button", "obsf30", "--lift-tab"],
+        "obsf30_1x4_rim_stop_snap_lid_30p5_mw47599_lift_tab_8mm", 41.5, 175.5, 3.75, 4, 30.5,
     ),
 ])
 def test_multi_button_stl_exports_button_face_on_bed(
@@ -182,7 +215,7 @@ def test_multi_button_stl_exports_button_face_on_bed(
         "button_lid.py", *args, "--output", str(tmp_path),
     ])
     lid_main()
-    path = tmp_path / f"{name}_mw47599.stl"
+    path = tmp_path / f"{name}.stl"
     facets = np.fromfile(path, offset=84, dtype=[
         ("normal", "<f4", 3), ("vertices", "<f4", (3, 3)), ("attributes", "<u2"),
     ])
