@@ -1,10 +1,10 @@
 # Arcade Buttons × Gridfinity
 
-Printable Gridfinity storage for Sanwa OBSF-24 and OBSF-30 arcade buttons.
-Choose a [standalone 1×1 holder](#single-button-holders) or a
-[drop-in lid](#drop-in-lids-for-existing-bins) for an existing bin.
+[Rim-stop lids](#drop-in-lids-for-existing-bins) hold Sanwa OBSF-24 and OBSF-30
+arcade buttons in existing Gridfinity bins. To remove a button, lift the lid,
+squeeze the clips from underneath, and push the button out.
 
-![CAD views of the 1×1 holders, 1×1 flush lid, both 1×4 rim-stop lids, and the 2×4 rim-stop lid](output/preview.png)
+![Rim-stop lids for five OBSF-24 buttons on a 1×4 bin, four OBSF-30 buttons on a 1×4 bin, and eight OBSF-30 buttons on a 2×4 bin](output/preview.png)
 
 The designs are digitally validated prototypes. Printed fit and clip
 engagement still need a physical check.

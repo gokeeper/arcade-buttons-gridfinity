@@ -16,7 +16,7 @@ from matplotlib.collections import PolyCollection
 from matplotlib.path import Path as PlotPath
 import numpy as np
 
-from button_bin import Parameters, button_reference, foot, make_bin
+from button_bin import Parameters, button_reference, foot
 from button_lid import make_flush_snap_lid
 
 
@@ -80,34 +80,27 @@ def rasterize(
 
 
 def render_overview(path: Path) -> None:
-    holder_color = (69, 139, 163)
     lid_color = (81, 114, 165)
     models = (
-        ("1×1×6U exposed holder", "1 × OBSF-30",
-         make_bin(Parameters(height_u=6, exposed_flange=True)), holder_color, -55),
-        ("1×1×7U stacking bin", "1 × OBSF-30",
-         make_bin(), holder_color, -55),
-        ("1×1 flush lid", "1 × OBSF-30",
-         make_flush_snap_lid(), lid_color, -55),
-        ("1×4 rim-stop lid", "5 × OBSF-24  ·  32 mm pitch",
-         make_flush_snap_lid("1x4", rim_stop=True), (190, 125, 63), -15),
-        ("1×4 rim-stop lid", "4 × OBSF-30  ·  42 mm pitch",
-         make_flush_snap_lid("1x4", rim_stop=True, button="obsf30"), lid_color, -15),
-        ("2×4 rim-stop lid", "8 × OBSF-30  ·  42 mm pitch",
-         make_flush_snap_lid("2x4", rim_stop=True), lid_color, -15),
+        ("1×4 lid", "5 × OBSF-24  ·  32 mm pitch",
+         make_flush_snap_lid("1x4", rim_stop=True), (190, 125, 63)),
+        ("1×4 lid", "4 × OBSF-30  ·  42 mm pitch",
+         make_flush_snap_lid("1x4", rim_stop=True, button="obsf30"), lid_color),
+        ("2×4 lid", "8 × OBSF-30  ·  42 mm pitch",
+         make_flush_snap_lid("2x4", rim_stop=True), lid_color),
     )
-    fig, axes = plt.subplots(2, 3, figsize=(12.8, 7.6), facecolor=PREVIEW_BACKGROUND)
-    fig.text(0.05, 0.92, "Holders and snap-in lids",
+    fig, axes = plt.subplots(1, 3, figsize=(12.8, 3.9), facecolor=PREVIEW_BACKGROUND)
+    fig.text(0.05, 0.90, "Rim-stop lids",
              fontsize=25, fontweight="bold", color="#172c3d")
-    for ax, (title, subtitle, shape, color, azimuth) in zip(axes.flat, models):
-        ax.imshow(rasterize(shape, (560, 340), azimuth=azimuth, color=color))
+    for ax, (title, subtitle, shape, color) in zip(axes, models):
+        ax.imshow(rasterize(shape, (560, 340), azimuth=-15, color=color))
         ax.set_title(title, loc="left", fontsize=15, fontweight="bold", color="#172c3d")
         ax.text(0, -0.04, subtitle, transform=ax.transAxes, va="top",
                 fontsize=13, color="#354456")
         ax.axis("off")
-    fig.text(0.05, 0.045, "Orthographic CAD views, scaled individually.",
+    fig.text(0.05, 0.08, "Orthographic CAD views, scaled individually.",
              fontsize=10, color="#354456")
-    fig.subplots_adjust(left=0.05, right=0.95, bottom=0.12, top=0.84, wspace=0.20, hspace=0.45)
+    fig.subplots_adjust(left=0.05, right=0.95, bottom=0.24, top=0.76, wspace=0.20)
     fig.savefig(path, dpi=160, facecolor=fig.get_facecolor())
     plt.close(fig)
 
