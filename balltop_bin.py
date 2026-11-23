@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import argparse
-from math import isclose
+from math import isclose, sqrt
 from pathlib import Path
 
 import cadquery as cq
@@ -11,21 +11,50 @@ from OCP.BRepBuilderAPI import BRepBuilderAPI_Sewing
 from OCP.StlAPI import StlAPI_Reader
 from OCP.TopoDS import TopoDS_Shape
 
-from button_bin import export_pair
-from validate_models import mesh_report
+from button_bin import cylinder, export_pair
+from validate_models import validate_export
 
 
 CELL_PITCH = 42.0
 HEIGHT_REDUCTION = 14.0
 LOWER_CUT_Z = 12.0
 FLOOR_Z = 6.1
-SEAT_Z = 7.202  # The source has a raised floor pad under each ball.
+PAD_Z = 7.202  # The source has a raised floor pad under each ball.
 DIVIDER_THICKNESS = 1.8
-DIVIDER_HEIGHT = 18.0  # Above the ball seat.
+DIVIDER_HEIGHT = 18.0  # Above the pad.
 SCOOP_RADIUS = 9.0
-SCOOP_START = 12.0  # Above the ball seat.
+SCOOP_START = 12.0  # Above the pad.
 BALL_DIAMETER = 35.0
 BALL_CLEARANCE = 1.0  # Diametral allowance used for the vertical removal check.
+RING_INNER_DIAMETER = 18.0
+RING_OUTER_DIAMETER = 23.0
+RING_HEIGHT = 3.0
+RING_ROUNDOVER = 0.5
+
+
+def make_ball_seat(x: float, y: float, floor_z: float) -> cq.Shape:
+    """Make a centering ring with a rounded inner contact edge."""
+    ring = cylinder(RING_OUTER_DIAMETER, -0.1, RING_HEIGHT).cut(
+        cylinder(RING_INNER_DIAMETER, -1, RING_HEIGHT + 1)
+    )
+    inner_top = [edge for edge in ring.Edges() if edge.geomType() == "CIRCLE"
+                 and isclose(edge.Center().z, RING_HEIGHT)
+                 and isclose(edge.radius(), RING_INNER_DIAMETER / 2)]
+    return ring.Solids()[0].fillet(RING_ROUNDOVER, inner_top).translate((x, y, floor_z))
+
+
+def seated_ball_center_z(floor_z: float, radius: float) -> float:
+    # In section, the ball is externally tangent to the inner roundover.
+    fillet_x = RING_INNER_DIAMETER / 2 + RING_ROUNDOVER
+    fillet_z = floor_z + RING_HEIGHT - RING_ROUNDOVER
+    return fillet_z + sqrt((radius + RING_ROUNDOVER)**2 - fillet_x**2)
+
+
+def ball_lift_envelope(center: cq.Vector, radius: float, clear_z: float) -> cq.Shape:
+    """Volume below the equator and directly above it during a straight lift."""
+    bottom = cq.Solid.makeSphere(radius, center, angleDegrees1=-90, angleDegrees2=0)
+    top = cylinder(2 * radius, center.z, clear_z, center.x, center.y)
+    return bottom.fuse(top)
 
 
 def load_source(path: Path) -> cq.Solid:
@@ -71,7 +100,7 @@ def make_balltop_bin(source: cq.Shape) -> cq.Shape:
     divider_base = FLOOR_Z - 0.3
     dividers = [
         cq.Solid.makeBox(
-            bounds.xlen - 1.2, DIVIDER_THICKNESS, SEAT_Z + DIVIDER_HEIGHT - divider_base,
+            bounds.xlen - 1.2, DIVIDER_THICKNESS, PAD_Z + DIVIDER_HEIGHT - divider_base,
             cq.Vector(bounds.xmin + 0.6, y_center + cell * CELL_PITCH - DIVIDER_THICKNESS / 2,
                       divider_base),
         )
@@ -81,7 +110,7 @@ def make_balltop_bin(source: cq.Shape) -> cq.Shape:
 
     # An open U-shaped scoop on each side exposes the ball below its equator.
     cell_centers = [y_center + cell * CELL_PITCH for cell in (-1.5, -0.5, 0.5, 1.5)]
-    scoop_center_z = SEAT_Z + SCOOP_START + SCOOP_RADIUS
+    scoop_center_z = PAD_Z + SCOOP_START + SCOOP_RADIUS
     scoops = []
     for y in cell_centers:
         scoops.extend((
@@ -90,16 +119,15 @@ def make_balltop_bin(source: cq.Shape) -> cq.Shape:
             cq.Solid.makeBox(cut_width, 2 * SCOOP_RADIUS, rim_z + 1 - scoop_center_z,
                              cq.Vector(outside_x, y - SCOOP_RADIUS, scoop_center_z)),
         ))
-    body = body.cut(*scoops).clean()
+    seats = [make_ball_seat(x_center, y, PAD_Z) for y in cell_centers]
+    body = body.cut(*scoops).fuse(*seats).clean()
     if not body.isValid() or len(body.Solids()) != 1:
         raise RuntimeError("Expected one valid, connected ball-top bin.")
 
     radius = (BALL_DIAMETER + BALL_CLEARANCE) / 2
     for position, y in enumerate(cell_centers, start=1):
-        center = cq.Vector(x_center, y, SEAT_Z + radius)
-        bottom = cq.Solid.makeSphere(radius, center, angleDegrees1=-90, angleDegrees2=0)
-        top = cq.Solid.makeCylinder(radius, rim_z + 1 - center.z, center)
-        sweep = bottom.fuse(top)
+        center = cq.Vector(x_center, y, seated_ball_center_z(PAD_Z, radius))
+        sweep = ball_lift_envelope(center, radius, rim_z + 1)
         if body.intersect(sweep).Volume() > 1e-6:
             raise RuntimeError(f"The ball removal path is blocked in cell {position}.")
 
@@ -116,7 +144,7 @@ def main() -> None:
     args.output.mkdir(parents=True, exist_ok=True)
     path = args.output / "balltop_1x4_5u_35mm"
     export_pair(body, path)
-    mesh_report(path.with_suffix(".stl"))
+    validate_export(body, path)
     print(f"{path.with_suffix('.stl')} (four 35 mm ball-top compartments)")
 
 

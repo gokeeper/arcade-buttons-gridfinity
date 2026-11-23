@@ -49,26 +49,28 @@ def mesh_report(path: Path) -> dict:
             "consistent_winding": True, "volume_mm3": round(volume, 3)}
 
 
+def validate_export(shape: cq.Shape, path: Path) -> dict:
+    """Check a CAD solid against its exported STL and STEP files."""
+    assert shape.isValid(), f"Invalid CAD: {path}"
+    assert len(shape.Solids()) == 1, f"Expected one connected solid: {path}"
+    mesh = mesh_report(path.with_suffix(".stl"))
+    imported = cq.importers.importStep(str(path.with_suffix(".step"))).val()
+    assert imported.isValid() and len(imported.Solids()) == 1, f"Invalid STEP: {path}"
+    assert abs(imported.Volume() - shape.Volume()) < 0.01, f"STEP volume mismatch: {path}"
+    assert abs(mesh["volume_mm3"] - shape.Volume()) / shape.Volume() < 0.005, (
+        f"STL volume mismatch: {path}"
+    )
+    # Ignore tessellation deflection when measuring the CAD boundary.
+    bounds = Bnd_Box()
+    BRepBndLib.AddOptimal_s(shape.wrapped, bounds, False, False)
+    x0, y0, z0, x1, y1, z1 = bounds.Get()
+    return {"valid_single_solid": True, "step_roundtrip": True,
+            "dimensions_mm": [round(x1 - x0, 3), round(y1 - y0, 3), round(z1 - z0, 3)],
+            "cad_volume_mm3": round(shape.Volume(), 3), **mesh}
+
+
 def validate_all(p: Parameters, shapes: dict[str, cq.Shape], output: Path) -> dict:
-    results = {}
-    for name, shape in shapes.items():
-        assert shape.isValid(), f"Invalid CAD: {name}"
-        assert len(shape.Solids()) == 1, f"Expected one connected solid: {name}"
-        mesh = mesh_report(output / f"{name}.stl")
-        # Confirm STEP export can be read as the same valid solid.
-        imported = cq.importers.importStep(str(output / f"{name}.step")).val()
-        assert imported.isValid() and len(imported.Solids()) == 1
-        assert abs(imported.Volume() - shape.Volume()) < 0.01
-        assert abs(mesh["volume_mm3"] - shape.Volume()) / shape.Volume() < 0.005
-        # Ignore tessellation deflection when measuring the CAD boundary.
-        bounds = Bnd_Box()
-        BRepBndLib.AddOptimal_s(shape.wrapped, bounds, False, False)
-        x0, y0, z0, x1, y1, z1 = bounds.Get()
-        results[name] = {"valid_single_solid": True, "step_roundtrip": True,
-                         "dimensions_mm": [round(x1 - x0, 3),
-                                           round(y1 - y0, 3),
-                                           round(z1 - z0, 3)],
-                         "cad_volume_mm3": round(shape.Volume(), 3), **mesh}
+    results = {name: validate_export(shape, output / name) for name, shape in shapes.items()}
     model = next(iter(shapes.values()))
     envelope = button_envelope(p)
     assert model.intersect(envelope).Volume() < 1e-6, "Button envelope hits bin"

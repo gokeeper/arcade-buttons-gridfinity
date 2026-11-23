@@ -1,6 +1,7 @@
 """Generate arcade button lids for Gridfinity bin rims."""
 
 import argparse
+from collections.abc import Iterable
 from pathlib import Path
 
 import cadquery as cq
@@ -86,7 +87,6 @@ def make_flush_snap_lid(
         raise ValueError("The lift tab requires a 1x4 rim-stop lid.")
     columns, rows, default_button = SNAP_LAYOUTS[layout]
     button = button or default_button
-    opening, recess_diameter = SNAP_BUTTONS[button]
     width = FLUSH_LID_WIDTH + (columns - 1) * GRID_PITCH
     length = FLUSH_LID_WIDTH + (rows - 1) * GRID_PITCH
     locator_height = FLUSH_LID_THICKNESS - RIM_STOP_HEIGHT if rim_stop else FLUSH_LID_THICKNESS
@@ -101,19 +101,24 @@ def make_flush_snap_lid(
                   .extrude(RIM_STOP_HEIGHT)
                   .edges("|Z").fillet(RIM_STOP_CORNER_RADIUS).val())
         lid = lid.fuse(flange)
-    recess_depth = FLUSH_LID_THICKNESS - PLATE_THICKNESS
     y_centers = [(row - (rows - 1) / 2) * GRID_PITCH for row in range(rows)]
     if layout == "1x4" and button == "obsf24":
         # Fit five smaller buttons over four Gridfinity cells.
         y_centers = [-64, -32, 0, 32, 64]
+    x_centers = [(column - (columns - 1) / 2) * GRID_PITCH for column in range(columns)]
+    return cut_snap_openings(lid, ((button, x, y) for x in x_centers for y in y_centers))
+
+
+def cut_snap_openings(lid: cq.Shape, positions: Iterable[tuple[str, float, float]]) -> cq.Shape:
+    """Cut each snap bore and its underside clip recess into a lid based at Z=0."""
+    recess_depth = FLUSH_LID_THICKNESS - PLATE_THICKNESS
     cuts = []
-    for column in range(columns):
-        x = (column - (columns - 1) / 2) * GRID_PITCH
-        for y in y_centers:
-            cuts.extend((
-                cylinder(opening, -1, FLUSH_LID_THICKNESS + 1, x, y),
-                cylinder(recess_diameter, -1, recess_depth, x, y),
-            ))
+    for button, x, y in positions:
+        opening, recess_diameter = SNAP_BUTTONS[button]
+        cuts.extend((
+            cylinder(opening, -1, FLUSH_LID_THICKNESS + 1, x, y),
+            cylinder(recess_diameter, -1, recess_depth, x, y),
+        ))
     return lid.cut(*cuts).clean()
 
 

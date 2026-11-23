@@ -16,6 +16,10 @@ from matplotlib.collections import PolyCollection
 from matplotlib.path import Path as PlotPath
 import numpy as np
 
+from arcade_bin import FLOOR_Z, LOCATOR_BOTTOM_Z, cell_center
+from arcade_bin import make_bin as make_arcade_bin
+from arcade_bin import make_lid as make_arcade_lid
+from balltop_bin import BALL_DIAMETER, seated_ball_center_z
 from button_bin import Parameters, button_reference, foot
 from button_lid import make_flush_snap_lid
 
@@ -25,13 +29,21 @@ PREVIEW_BACKGROUND = "#f4f6f8"
 
 def rasterize(
     shape: cq.Shape, size: int | tuple[int, int] = 900, *, azimuth: float = -55,
+    elevation: float = 48,
     color: tuple[int, int, int] = (69, 139, 163),
+    overlays: tuple[tuple[cq.Shape, tuple[int, int, int]], ...] = (),
 ) -> np.ndarray:
     """Orthographic depth buffer avoids painter-sorting artifacts in CAD renders."""
     width, height = (size, size) if isinstance(size, int) else size
-    vertices, triangles = shape.tessellate(0.05, 0.12)
-    xyz = np.array([v.toTuple() for v in vertices])
-    az, el = np.radians([azimuth, 48])
+    coordinates, triangles, face_colors = [], [], []
+    for part, part_color in ((shape, color), *overlays):
+        vertices, facets = part.tessellate(0.05, 0.12)
+        offset = len(coordinates)
+        coordinates.extend(v.toTuple() for v in vertices)
+        triangles.extend(tuple(offset + i for i in facet) for facet in facets)
+        face_colors.extend([np.array(part_color)] * len(facets))
+    xyz = np.array(coordinates)
+    az, el = np.radians([azimuth, elevation])
     eye = np.array([np.cos(az) * np.cos(el), np.sin(az) * np.cos(el), np.sin(el)])
     right = np.array([-np.sin(az), np.cos(az), 0])
     up = np.cross(eye, right)
@@ -47,8 +59,7 @@ def rasterize(
     depth = np.full((height, width), -np.inf)
     light = np.array([-0.3, -0.5, 0.81])
     light /= np.linalg.norm(light)
-    base = np.array(color)
-    for triangle in triangles:
+    for triangle, base in zip(triangles, face_colors):
         a, b, c = screen[list(triangle)]
         x0 = max(0, int(np.floor(min(a[0], b[0], c[0]))))
         x1 = min(width - 1, int(np.ceil(max(a[0], b[0], c[0]))))
@@ -77,6 +88,26 @@ def rasterize(
         rgb[y0:y1 + 1, x0:x1 + 1][mask] = np.clip(base * shade, 0, 255).astype(np.uint8)
         target[mask] = z[mask]
     return rgb
+
+
+def render_arcade_bin(path: Path) -> None:
+    bin_body = make_arcade_bin()
+    lid = make_arcade_lid().translate((0, 0, LOCATOR_BOTTOM_Z))
+    radius = BALL_DIAMETER / 2
+    ball_center = cq.Vector(*cell_center(1, 1), seated_ball_center_z(FLOOR_Z, radius))
+    ball = cq.Solid.makeSphere(radius, ball_center, angleDegrees1=-90, angleDegrees2=90)
+
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4.9), facecolor=PREVIEW_BACKGROUND)
+    installed = ((lid, (96, 128, 182)), (ball, (211, 143, 78)))
+    views = (("Lid seated", 48, installed), ("Lid removed", 66, ()))
+    for ax, (label, elevation, overlays) in zip(axes, views):
+        view = rasterize(bin_body, (640, 550), azimuth=150, elevation=elevation, overlays=overlays)
+        ax.imshow(view)
+        ax.set_title(label, fontsize=15, color="#172c3d", pad=10)
+        ax.axis("off")
+    fig.subplots_adjust(left=0.035, right=0.965, bottom=0.035, top=0.90, wspace=0.08)
+    fig.savefig(path, dpi=160, facecolor=fig.get_facecolor())
+    plt.close(fig)
 
 
 def render_overview(path: Path) -> None:
@@ -273,8 +304,9 @@ def render_dimension_drawing(p: Parameters, path: Path) -> None:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Render the README model overview.")
+    parser = argparse.ArgumentParser(description="Render the README model previews.")
     parser.add_argument("--output", type=Path, default=Path("output"))
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     render_overview(args.output / "preview.png")
+    render_arcade_bin(args.output / "arcade_3x3_preview.png")

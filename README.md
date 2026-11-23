@@ -1,13 +1,47 @@
 # Arcade Buttons × Gridfinity
 
 Gridfinity storage for Sanwa OBSF-24 and OBSF-30 arcade buttons and
-35 mm joystick ball tops. The 1×4 button lids come with an optional
-[lift tab](#lift-tab-lids). The [5U ball-top bin](#joystick-ball-top-bin)
+35 mm joystick ball tops. The [mixed 3×3 bin](#mixed-33-arcade-bin)
+holds eight buttons and one ball top. The 1×4 button lids come with an
+optional [lift tab](#lift-tab-lids), and the [5U ball-top bin](#joystick-ball-top-bin)
 holds four balls in separate compartments.
 
-![Rim-stop lids for five OBSF-24 buttons on a 1×4 bin, four OBSF-30 buttons on a 1×4 bin, and eight OBSF-30 buttons on a 2×4 bin](https://raw.githubusercontent.com/gokeeper/arcade-buttons-gridfinity/master/output/preview.png?v=rim-stop-lids)
+## Mixed 3×3 arcade bin
+
+![CAD views of the 3×3 bin with the eight-opening lid and ball in place, and with the lid removed to show the dividers and centering ring](output/arcade_3x3_preview.png)
+
+The 125.5 × 125.5 mm bin uses a 42 mm pitch and nine Gridfinity feet.
+Two dividers separate the 5U ball-top corner from the shared 7U button
+cavity and support the inside corner of the removable L-shaped lid. The
+rims are 31.55 mm and 45.55 mm above the base, respectively.
+
+| Row \ Column | 1 | 2 | 3 |
+|---|---|---|---|
+| 1 | 35 mm ball top | OBSF-24 | OBSF-24 |
+| 2 | OBSF-30 | OBSF-30 | OBSF-30 |
+| 3 | OBSF-30 | OBSF-30 | OBSF-30 |
+
+| Part | Files | STL orientation |
+|---|---|---|
+| 3×3 bin | [STL](output/arcade_3x3_5u_7u_bin.stl) · [STEP](output/arcade_3x3_5u_7u_bin.step) | Feet down |
+| L-shaped snap-in lid | [STL](output/arcade_3x3_rim_stop_snap_lid.stl) · [STEP](output/arcade_3x3_rim_stop_snap_lid.step) | Button face down |
+
+The lid covers all eight button positions. Its rim stop is 1.2 mm thick,
+the locator reaches 2 mm into the cavity, and the clips engage across
+2.4 mm of material. The STEP models share coordinates with the lid seated.
+
+The ball sits on a 3 mm high centering ring with an 18 mm bore, a 23 mm
+outside diameter, and a rounded contact edge. About 11 mm of a 35 mm ball
+projects above the low rim, with access from both outside edges.
+
+CAD checks confirmed straight lift paths for the lid and ball, with
+7.55 mm of clearance below the bare OBSF-24 terminals and 7.85 mm below
+the bare OBSF-30 terminals. Both STLs are watertight and both STEP files
+contain valid solids.
 
 ## Drop-in lids for existing bins
+
+![Rim-stop lids for five OBSF-24 buttons on a 1×4 bin, four OBSF-30 buttons on a 1×4 bin, and eight OBSF-30 buttons on a 2×4 bin](output/preview.png)
 
 | Bin footprint | Buttons | Center spacing | Files |
 |---|---|---:|---|
@@ -60,32 +94,34 @@ your bin before seating the loaded lid.
 
 ## Print and use
 
-1. Print in PETG. The STLs are already oriented with the flat button-facing
-   side on the bed and the clip recesses facing up.
-2. Press the buttons into the lid and check that each flange seats flat
-   and both clips engage. Check that the loaded lid rests on the bin rim.
+1. Print in PETG. The bin STLs are feet-down, and the lid STLs have the
+   button face on the bed with the clip recesses facing up.
+2. Press each button into its matching opening with the lid off the bin.
+   Check that each flange seats flat and both clips engage, then seat the
+   loaded lid on the bin rim.
 3. To remove a button, lift the whole lid, squeeze the clips from underneath,
    and push the button out.
+4. Lift the ball top straight up. On the 3×3 bin, grasp it from the two
+   low outside edges with the lid still seated.
 
-The geometry was verified digitally. Printed rim fit and clip engagement
-still need a physical check.
+Printed rim fit, clip engagement, and grip comfort still need a physical check.
 
 ## Joystick ball-top bin
 
-The **1×4×5U bin** has three 1.8 mm dividers and paired finger scoops.
-About 10.7 mm of each seated ball sits above the rim so you can pinch it
-from the sides. Print upright with the Gridfinity foot on the bed.
+The **1×4×5U bin** has three 1.8 mm dividers, paired finger scoops, and
+the same rounded centering ring in each of its four compartments.
+About 11 mm of each seated ball sits above the rim so you can pinch it
+from the sides. Print upright with the Gridfinity feet on the bed.
 [Print-ready STL](output/balltop_1x4_5u_35mm.stl) ·
 [Faceted STEP](output/balltop_1x4_5u_35mm.step)
 
 The STL and STEP adapt ABDELat's Ultimate Gridfinity 1×4×7U bin by
-shortening the walls by 14 mm and adding the dividers and scoops. These
-two remix files are shared under CC BY-SA 4.0.
+shortening the walls by 14 mm and adding the dividers, scoops, and seats.
+These two remix files are shared under CC BY-SA 4.0.
 [Original bin collection](https://makerworld.com/en/models/47599-ultimate-gridfinity-bins-collection-parametric) ·
 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 
-A 36 mm gauge cleared the straight removal path in all four positions in
-CAD. Grip comfort still needs a print check.
+A 36 mm gauge cleared the straight removal path in all four positions in CAD.
 
 ## Regenerate
 
@@ -97,6 +133,9 @@ From the repository root, use the existing Python environment with
 ```
 
 ```bash
+# Mixed 3×3 bin and L-shaped lid
+/home/gkp/codes/.headless/bin/python arcade_bin.py
+
 # 1×4 lid for five OBSF-24 buttons
 /home/gkp/codes/.headless/bin/python button_lid.py --rim-stop-snap 1x4
 
@@ -110,7 +149,7 @@ From the repository root, use the existing Python environment with
 # 2×4 lid for eight OBSF-30 buttons
 /home/gkp/codes/.headless/bin/python button_lid.py --rim-stop-snap 2x4
 
-# README preview
+# README previews
 /home/gkp/codes/.headless/bin/python preview.py
 ```
 
@@ -121,9 +160,9 @@ collection as input to the [ball-top generator](balltop_bin.py).
 /home/gkp/codes/.headless/bin/python balltop_bin.py --source 1x4x7u.stl
 ```
 
-The lid generator checks that each lid is a single valid solid and that
-its STL is watertight with consistent winding. Geometry tests cover the
-openings, recesses, rim stops, and STL print orientation.
+The generators check the solids and exported STL meshes. Geometry tests cover
+the bore layout, clip recesses, rim stops, print orientation, and the mixed
+bin's removal paths and terminal clearance.
 
 ```bash
 /home/gkp/codes/.headless/bin/pip install pytest
