@@ -78,6 +78,11 @@ def make_lid(
     return lid.clean()
 
 
+def make_rim_stop(width: float, length: float, bottom: float) -> cq.Shape:
+    return (cq.Workplane("XY", origin=(0, 0, bottom)).rect(width, length)
+            .extrude(RIM_STOP_HEIGHT).edges("|Z").fillet(RIM_STOP_CORNER_RADIUS).val())
+
+
 def make_flush_snap_lid(
     layout: str = "1x1", *, rim_stop: bool = False, button: str | None = None,
     lift_tab: bool = False,
@@ -95,11 +100,9 @@ def make_flush_snap_lid(
     if rim_stop:
         extra_width = LID_WIDTH - FLUSH_LID_WIDTH
         # Extend the flange at +Y while keeping the locator centered in the bin.
-        tab = LIFT_TAB_EXTENSION if lift_tab else 0
-        flange = (cq.Workplane("XY", origin=(0, tab / 2, locator_height))
-                  .rect(width + extra_width, length + extra_width + tab)
-                  .extrude(RIM_STOP_HEIGHT)
-                  .edges("|Z").fillet(RIM_STOP_CORNER_RADIUS).val())
+        tab = LIFT_TAB_EXTENSION if lift_tab or layout == "2x4" else 0
+        flange = make_rim_stop(width + extra_width, length + extra_width + tab,
+                               locator_height).translate((0, tab / 2, 0))
         lid = lid.fuse(flange)
     y_centers = [(row - (rows - 1) / 2) * GRID_PITCH for row in range(rows)]
     if layout == "1x4" and button == "obsf24":
@@ -147,7 +150,7 @@ def main() -> None:
     )
     snap_design.add_argument(
         "--rim-stop-snap", nargs="?", const="2x4", choices=("2x4", "1x4"),
-        help="Export a full rim-stop lid for MakerWorld 47599 (default: 2x4).",
+        help="Export a rim-stop lid for MakerWorld 47599 (default: 2x4 with lift tab).",
     )
     parser.add_argument("--button", choices=SNAP_BUTTONS,
                         help="Button model for --rim-stop-snap 1x4 (default: obsf24).")

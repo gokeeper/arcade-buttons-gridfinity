@@ -138,7 +138,7 @@ def test_flush_snap_lid_has_single_bore_and_recess():
 
 @pytest.mark.parametrize("layout, button, rim_stop, width, length, xs, ys, opening, recess", [
     ("2x4", None, False, 79, 163, (-21, 21), (-63, -21, 21, 63), 30.5, 34.6),
-    ("2x4", None, True, 83.5, 167.5, (-21, 21), (-63, -21, 21, 63), 30.5, 34.6),
+    ("2x4", None, True, 83.5, 175.5, (-21, 21), (-63, -21, 21, 63), 30.5, 34.6),
     ("1x4", None, True, 41.5, 167.5, (0,), (-64, -32, 0, 32, 64), 24.3, 28.6),
     ("1x4", "obsf30", True, 41.5, 167.5, (0,), (-63, -21, 21, 63), 30.5, 34.6),
 ])
@@ -160,8 +160,10 @@ def test_multi_button_snap_lid_places_buttons_at_expected_centers(
     if rim_stop:
         # The four midpoints span the rim above the locator, with a stop
         # shoulder 2 mm above the bottom of the lid.
-        x_edge, y_edge = width / 2 - 0.75, length / 2 - 0.75
-        for x, y in ((-x_edge, 0), (x_edge, 0), (0, -y_edge), (0, y_edge)):
+        assert bounds.ymin == pytest.approx(-83.75)
+        x_edge = width / 2 - 0.75
+        for x, y in ((-x_edge, 0), (x_edge, 0), (0, bounds.ymin + 0.75),
+                     (0, bounds.ymax - 0.75)):
             assert not lid.isInside(cq.Vector(x, y, 1.99))
             assert lid.isInside(cq.Vector(x, y, 2.01))
 
@@ -189,7 +191,7 @@ def test_1x4_lift_tab_only_extends_one_rim_end(button):
     ),
     (
         ["--rim-stop-snap"],
-        "obsf30_2x4_rim_stop_snap_lid_30p5_mw47599", 83.5, 167.5, 3.75, 8, 30.5,
+        "obsf30_2x4_rim_stop_snap_lid_30p5_mw47599", 83.5, 175.5, 3.75, 8, 30.5,
     ),
     (
         ["--rim-stop-snap", "1x4"],

@@ -3,12 +3,13 @@
 Gridfinity storage for Sanwa OBSF-24 and OBSF-30 arcade buttons and
 35 mm joystick ball tops. The [mixed 3×3 bin](#mixed-33-arcade-bin)
 holds eight buttons and one ball top. The 1×4 button lids come with an
-optional [lift tab](#lift-tab-lids), and the [5U ball-top bin](#joystick-ball-top-bin)
-holds four balls in separate compartments.
+optional [lift tab](#lift-tab-lids), and the 3×3 and 2×4 lids include one.
+The [5U ball-top bin](#joystick-ball-top-bin) holds four balls in separate
+compartments.
 
 ## Mixed 3×3 arcade bin
 
-![CAD views of the 3×3 bin with the eight-opening lid and ball in place, and with the lid removed to show the dividers and centering ring](output/arcade_3x3_preview.png)
+![CAD views of the 3×3 bin with the lift-tab lid and ball in place, and with the lid removed to show the dividers and centering ring](output/arcade_3x3_preview.png)
 
 The 125.5 × 125.5 mm bin uses a 42 mm pitch and nine Gridfinity feet.
 Two dividers separate the 5U ball-top corner from the shared 7U button
@@ -28,7 +29,8 @@ rims are 31.55 mm and 45.55 mm above the base, respectively.
 
 The lid covers all eight button positions. Its rim stop is 1.2 mm thick,
 the locator reaches 2 mm into the cavity, and the clips engage across
-2.4 mm of material. The STEP models share coordinates with the lid seated.
+2.4 mm of material. An 8 mm lift tab extends from the short edge behind
+the two OBSF-24 buttons. The STEP models share coordinates with the lid seated.
 
 The ball sits on a 3 mm high centering ring with an 18 mm bore, a 23 mm
 outside diameter, and a rounded contact edge. About 11 mm of a 35 mm ball
@@ -41,7 +43,7 @@ contain valid solids.
 
 ## Drop-in lids for existing bins
 
-![Rim-stop lids for five OBSF-24 buttons on a 1×4 bin, four OBSF-30 buttons on a 1×4 bin, and eight OBSF-30 buttons on a 2×4 bin](output/preview.png)
+![Rim-stop lids for five OBSF-24 buttons on a 1×4 bin, four OBSF-30 buttons on a 1×4 bin, and eight OBSF-30 buttons on a 2×4 bin with a lift tab](output/preview.png)
 
 | Bin footprint | Buttons | Center spacing | Files |
 |---|---|---:|---|
@@ -51,9 +53,10 @@ contain valid solids.
 
 ### Lift-tab lids
 
-The 8 mm lift tab extends the full 41.5 mm width of one short end.
-The lid measures 41.5 × 175.5 mm overall and uses the same 37 × 163 mm
-locator. Leave the tab end accessible for a fingertip below the lip.
+The 8 mm lift tab extends across one short end. The optional 1×4 lift-tab
+lids measure 41.5 × 175.5 mm overall and use a 37 × 163 mm locator.
+The 2×4 lid includes the tab and measures 83.5 × 175.5 mm overall.
+Leave the tab end accessible for a fingertip below the lip.
 The tab projects into the space above the next Gridfinity cell.
 
 | Buttons | Lift-tab files |
@@ -72,7 +75,7 @@ A 2 mm locator centers the lid inside the opening.
 | Bin footprint | Standard lid footprint | Rounded locator footprint |
 |---|---:|---:|
 | 1×4 | 41.5 × 167.5 mm | 37 × 163 mm |
-| 2×4 | 83.5 × 167.5 mm | 79 × 163 mm |
+| 2×4 | 83.5 × 175.5 mm | 79 × 163 mm |
 
 | Fit dimension | OBSF-24 | OBSF-30 |
 |---|---:|---:|
@@ -146,7 +149,7 @@ From the repository root, use the existing Python environment with
 /home/gkp/codes/.headless/bin/python button_lid.py --rim-stop-snap 1x4 --lift-tab
 /home/gkp/codes/.headless/bin/python button_lid.py --rim-stop-snap 1x4 --button obsf30 --lift-tab
 
-# 2×4 lid for eight OBSF-30 buttons
+# 2×4 lift-tab lid for eight OBSF-30 buttons
 /home/gkp/codes/.headless/bin/python button_lid.py --rim-stop-snap 2x4
 
 # README previews

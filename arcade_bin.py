@@ -11,8 +11,8 @@ from balltop_bin import (
 )
 from button_bin import Parameters, cylinder, export_pair, foot, rounded_prism
 from button_lid import (
-    FLUSH_LID_THICKNESS, GRID_PITCH, LID_WIDTH, RIM_STOP_CORNER_RADIUS,
-    RIM_STOP_HEIGHT, SNAP_BUTTONS, cut_snap_openings,
+    FLUSH_LID_THICKNESS, GRID_PITCH, LID_WIDTH, LIFT_TAB_EXTENSION, RIM_STOP_CORNER_RADIUS,
+    RIM_STOP_HEIGHT, SNAP_BUTTONS, cut_snap_openings, make_rim_stop,
 )
 from validate_models import validate_export
 
@@ -83,9 +83,16 @@ def make_bin() -> cq.Shape:
 def make_lid() -> cq.Shape:
     """Return the lid with its locator at Z=0 and its button face pointing up."""
     stop = button_section(0, DIVIDER_BALL_EDGE, LOCATOR_DEPTH, FLUSH_LID_THICKNESS)
+    # Overlap the narrow +Y end so the tab's rounded corners blend into the rim.
+    half = FOOTPRINT / 2
+    tab_width = half + DIVIDER_BALL_EDGE
+    tab_length = LIFT_TAB_EXTENSION + 2 * RIM_STOP_CORNER_RADIUS
+    tab = make_rim_stop(tab_width, tab_length, LOCATOR_DEPTH).translate(
+        (half - tab_width / 2, half + LIFT_TAB_EXTENSION - tab_length / 2, 0)
+    )
     locator = button_section(WALL_THICKNESS + LOCATOR_CLEARANCE,
                              DIVIDER_BUTTON_EDGE - LOCATOR_CLEARANCE, 0, LOCATOR_DEPTH)
-    return cut_snap_openings(stop.fuse(locator), button_positions())
+    return cut_snap_openings(stop.fuse(tab, locator), button_positions())
 
 
 def check_fit(bin_body: cq.Shape, seated_lid: cq.Shape) -> dict[str, float]:

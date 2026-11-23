@@ -59,6 +59,18 @@ def test_lid_seats_on_both_dividers_and_clears_the_loaded_bin(parts):
     assert check_fit(bin_body, seated) == pytest.approx({"obsf24": 7.55, "obsf30": 7.85})
 
 
+def test_lift_tab_extends_only_the_two_button_rim_end(parts):
+    _, lid = parts
+    bounds = lid.BoundingBox()
+    assert (bounds.xmin, bounds.xmax, bounds.ymin, bounds.ymax) == pytest.approx(
+        (-62.75, 62.75, -62.75, 70.75)
+    )
+    for x in (-21.5, 0, 42, 62):
+        assert lid.isInside(cq.Vector(x, 66.75, 2.01))
+        assert not lid.isInside(cq.Vector(x, 66.75, 1.99))
+    assert not lid.isInside(cq.Vector(-42, 66.75, 2.6))
+
+
 def test_nominal_ball_centers_on_the_rounded_seat(parts):
     bin_body, _ = parts
     x, y = -42, 42
