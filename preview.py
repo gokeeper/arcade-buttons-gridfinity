@@ -1,7 +1,8 @@
-"""Preview actual CAD geometry with a depth-buffered render and a true section."""
+"""Render CAD previews and dimensioned sections for the README."""
 
 from __future__ import annotations
 
+import argparse
 import os
 from pathlib import Path
 import tempfile
@@ -15,34 +16,44 @@ from matplotlib.collections import PolyCollection
 from matplotlib.path import Path as PlotPath
 import numpy as np
 
-from button_bin import Parameters, button_reference, foot
+from button_bin import Parameters, button_reference, foot, make_bin
+from button_lid import make_flush_snap_lid
 
 
-def rasterize(shape: cq.Shape, size: int = 900) -> np.ndarray:
+PREVIEW_BACKGROUND = "#f4f6f8"
+
+
+def rasterize(
+    shape: cq.Shape, size: int | tuple[int, int] = 900, *, azimuth: float = -55,
+    color: tuple[int, int, int] = (69, 139, 163),
+) -> np.ndarray:
     """Orthographic depth buffer avoids painter-sorting artifacts in CAD renders."""
+    width, height = (size, size) if isinstance(size, int) else size
     vertices, triangles = shape.tessellate(0.05, 0.12)
     xyz = np.array([v.toTuple() for v in vertices])
-    az, el = np.radians([-55, 48])
+    az, el = np.radians([azimuth, 48])
     eye = np.array([np.cos(az) * np.cos(el), np.sin(az) * np.cos(el), np.sin(el)])
     right = np.array([-np.sin(az), np.cos(az), 0])
     up = np.cross(eye, right)
-    bounds = shape.BoundingBox()
-    xyz -= [0, 0, (bounds.zmin + bounds.zmax) / 2]
     view = xyz @ np.array([right, up, eye]).T
-    scale = size / max(72, bounds.zlen * 1.4)
-    screen = np.column_stack((size / 2 + scale * view[:, 0],
-                              size / 2 - scale * view[:, 1], view[:, 2]))
-    rgb = np.full((size, size, 3), [244, 246, 248], dtype=np.uint8)
-    depth = np.full((size, size), -np.inf)
+    projected = view[:, :2]
+    projected -= (projected.min(axis=0) + projected.max(axis=0)) / 2
+    scale = min(width * 0.93 / np.ptp(projected[:, 0]),
+                height * 0.90 / np.ptp(projected[:, 1]))
+    screen = np.column_stack((width / 2 + scale * view[:, 0],
+                              height / 2 - scale * view[:, 1], view[:, 2]))
+    background = matplotlib.colors.to_rgb(PREVIEW_BACKGROUND)
+    rgb = np.full((height, width, 3), np.rint(np.array(background) * 255), dtype=np.uint8)
+    depth = np.full((height, width), -np.inf)
     light = np.array([-0.3, -0.5, 0.81])
     light /= np.linalg.norm(light)
-    base = np.array([69, 139, 163])
+    base = np.array(color)
     for triangle in triangles:
         a, b, c = screen[list(triangle)]
         x0 = max(0, int(np.floor(min(a[0], b[0], c[0]))))
-        x1 = min(size - 1, int(np.ceil(max(a[0], b[0], c[0]))))
+        x1 = min(width - 1, int(np.ceil(max(a[0], b[0], c[0]))))
         y0 = max(0, int(np.floor(min(a[1], b[1], c[1]))))
-        y1 = min(size - 1, int(np.ceil(max(a[1], b[1], c[1]))))
+        y1 = min(height - 1, int(np.ceil(max(a[1], b[1], c[1]))))
         denominator = (b[1] - c[1]) * (a[0] - c[0]) + (c[0] - b[0]) * (a[1] - c[1])
         if abs(denominator) < 1e-10 or x1 < x0 or y1 < y0:
             continue
@@ -66,6 +77,39 @@ def rasterize(shape: cq.Shape, size: int = 900) -> np.ndarray:
         rgb[y0:y1 + 1, x0:x1 + 1][mask] = np.clip(base * shade, 0, 255).astype(np.uint8)
         target[mask] = z[mask]
     return rgb
+
+
+def render_overview(path: Path) -> None:
+    holder_color = (69, 139, 163)
+    lid_color = (81, 114, 165)
+    models = (
+        ("1×1×6U exposed holder", "1 × OBSF-30",
+         make_bin(Parameters(height_u=6, exposed_flange=True)), holder_color, -55),
+        ("1×1×7U stacking bin", "1 × OBSF-30",
+         make_bin(), holder_color, -55),
+        ("1×1 flush lid", "1 × OBSF-30",
+         make_flush_snap_lid(), lid_color, -55),
+        ("1×4 rim-stop lid", "5 × OBSF-24  ·  32 mm pitch",
+         make_flush_snap_lid("1x4", rim_stop=True), (190, 125, 63), -15),
+        ("1×4 rim-stop lid", "4 × OBSF-30  ·  42 mm pitch",
+         make_flush_snap_lid("1x4", rim_stop=True, button="obsf30"), lid_color, -15),
+        ("2×4 rim-stop lid", "8 × OBSF-30  ·  42 mm pitch",
+         make_flush_snap_lid("2x4", rim_stop=True), lid_color, -15),
+    )
+    fig, axes = plt.subplots(2, 3, figsize=(12.8, 7.6), facecolor=PREVIEW_BACKGROUND)
+    fig.text(0.05, 0.92, "Holders and snap-in lids",
+             fontsize=25, fontweight="bold", color="#172c3d")
+    for ax, (title, subtitle, shape, color, azimuth) in zip(axes.flat, models):
+        ax.imshow(rasterize(shape, (560, 340), azimuth=azimuth, color=color))
+        ax.set_title(title, loc="left", fontsize=15, fontweight="bold", color="#172c3d")
+        ax.text(0, -0.04, subtitle, transform=ax.transAxes, va="top",
+                fontsize=13, color="#354456")
+        ax.axis("off")
+    fig.text(0.05, 0.045, "Orthographic CAD views, scaled individually.",
+             fontsize=10, color="#354456")
+    fig.subplots_adjust(left=0.05, right=0.95, bottom=0.12, top=0.84, wspace=0.20, hspace=0.45)
+    fig.savefig(path, dpi=160, facecolor=fig.get_facecolor())
+    plt.close(fig)
 
 
 def draw_section(ax, shape: cq.Shape, color: str) -> None:
@@ -116,12 +160,12 @@ def draw_source_side_view(ax, p: Parameters) -> None:
 
 def render_preview(model: cq.Shape, p: Parameters, path: Path) -> None:
     fig, ((ax, section), (side_view, contact)) = plt.subplots(
-        2, 2, figsize=(13, 12), facecolor="#f4f6f8"
+        2, 2, figsize=(13, 12), facecolor=PREVIEW_BACKGROUND
     )
     ax.imshow(rasterize(model))
     ax.axis("off")
     ax.set_title(f"OBSF-30 · 1×1×{p.height_u}U\nActual CAD geometry", fontsize=13, pad=8)
-    section.set_facecolor("#f4f6f8")
+    section.set_facecolor(PREVIEW_BACKGROUND)
     draw_section(section, model, "#458ba3")
     draw_source_side_view(section, p)
     if p.exposed_flange:
@@ -233,3 +277,11 @@ def render_dimension_drawing(p: Parameters, path: Path) -> None:
     fig.subplots_adjust(bottom=0.11, top=0.9, left=0.03, right=0.97)
     fig.savefig(path, dpi=160, facecolor="white")
     plt.close(fig)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Render the README model overview.")
+    parser.add_argument("--output", type=Path, default=Path("output"))
+    args = parser.parse_args()
+    args.output.mkdir(parents=True, exist_ok=True)
+    render_overview(args.output / "preview.png")

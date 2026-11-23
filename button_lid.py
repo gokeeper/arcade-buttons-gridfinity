@@ -1,4 +1,4 @@
-"""Generate OBSF-30 lids for Gridfinity bin rims."""
+"""Generate arcade button lids for Gridfinity bin rims."""
 
 import argparse
 from pathlib import Path
@@ -17,10 +17,16 @@ FLUSH_LID_THICKNESS = 3.2
 FLUSH_LID_CORNER_RADIUS = 3.0
 RIM_STOP_HEIGHT = 1.2
 RIM_STOP_CORNER_RADIUS = 3.75
-SNAP_OPENING = 30.5
-SNAP_RECESS_DIAMETER = 34.6
 GRID_PITCH = 42.0
-FLUSH_LAYOUTS = {"1x1": (1, 1), "2x4": (2, 4)}
+SNAP_BUTTONS = {
+    "obsf30": (30.5, 34.6),
+    "obsf24": (24.3, 28.6),
+}
+SNAP_LAYOUTS = {
+    "1x1": (1, 1, "obsf30"),
+    "2x4": (2, 4, "obsf30"),
+    "1x4": (1, 4, "obsf24"),
+}
 # Conservative straight taper fitted inside the rounded rim of the supplied
 # ABDELat bin mesh. These are fit dimensions, not maximum rim measurements.
 RIM_PROFILES = {
@@ -70,9 +76,13 @@ def make_lid(
     return lid.clean()
 
 
-def make_flush_snap_lid(layout: str = "1x1", *, rim_stop: bool = False) -> cq.Shape:
-    """Build a snap-in lid with one bore per cell and an optional rim stop."""
-    columns, rows = FLUSH_LAYOUTS[layout]
+def make_flush_snap_lid(
+    layout: str = "1x1", *, rim_stop: bool = False, button: str | None = None,
+) -> cq.Shape:
+    """Build a snap-in lid for the selected bin footprint."""
+    columns, rows, default_button = SNAP_LAYOUTS[layout]
+    button = button or default_button
+    opening, recess_diameter = SNAP_BUTTONS[button]
     width = FLUSH_LID_WIDTH + (columns - 1) * GRID_PITCH
     length = FLUSH_LID_WIDTH + (rows - 1) * GRID_PITCH
     locator_height = FLUSH_LID_THICKNESS - RIM_STOP_HEIGHT if rim_stop else FLUSH_LID_THICKNESS
@@ -85,14 +95,17 @@ def make_flush_snap_lid(layout: str = "1x1", *, rim_stop: bool = False) -> cq.Sh
                   .edges("|Z").fillet(RIM_STOP_CORNER_RADIUS).val())
         lid = lid.fuse(flange)
     recess_depth = FLUSH_LID_THICKNESS - PLATE_THICKNESS
+    y_centers = [(row - (rows - 1) / 2) * GRID_PITCH for row in range(rows)]
+    if layout == "1x4" and button == "obsf24":
+        # Fit five smaller buttons over four Gridfinity cells.
+        y_centers = [-64, -32, 0, 32, 64]
     cuts = []
     for column in range(columns):
         x = (column - (columns - 1) / 2) * GRID_PITCH
-        for row in range(rows):
-            y = (row - (rows - 1) / 2) * GRID_PITCH
+        for y in y_centers:
             cuts.extend((
-                cylinder(SNAP_OPENING, -1, FLUSH_LID_THICKNESS + 1, x, y),
-                cylinder(SNAP_RECESS_DIAMETER, -1, recess_depth, x, y),
+                cylinder(opening, -1, FLUSH_LID_THICKNESS + 1, x, y),
+                cylinder(recess_diameter, -1, recess_depth, x, y),
             ))
     return lid.cut(*cuts).clean()
 
@@ -103,7 +116,7 @@ def export_lid(lid: cq.Shape, path: Path, *, button_face_down: bool = False) -> 
     path.parent.mkdir(parents=True, exist_ok=True)
     stl_shape = None
     if button_face_down:
-        # Starting on the recessed face leaves eight unsupported shoulders.
+        # Starting on the recessed face leaves unsupported shoulders.
         # Flip the solid so each hole widens as the print reaches its recess.
         stl_shape = lid.rotate((0, 0, 0), (1, 0, 0), 180).translate(
             (0, 0, FLUSH_LID_THICKNESS)
@@ -117,13 +130,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     snap_design = parser.add_mutually_exclusive_group()
     snap_design.add_argument(
-        "--flush-snap", nargs="?", const="1x1", choices=FLUSH_LAYOUTS,
+        "--flush-snap", nargs="?", const="1x1", choices=("1x1", "2x4"),
         help="Export a 30.5 mm flush snap-in lid for MakerWorld 47599 (default: 1x1).",
     )
     snap_design.add_argument(
-        "--rim-stop-snap", action="store_true",
-        help="Export the 2x4 snap-in lid with a full rim stop for MakerWorld 47599.",
+        "--rim-stop-snap", nargs="?", const="2x4", choices=("2x4", "1x4"),
+        help="Export a full rim-stop lid for MakerWorld 47599 (default: 2x4).",
     )
+    parser.add_argument("--button", choices=SNAP_BUTTONS,
+                        help="Button model for --rim-stop-snap 1x4 (default: obsf24).")
     parser.add_argument("--opening", type=float, choices=(30.2, 30.6), action="append",
                         help="Body opening in mm. Omit to export both sizes.")
     parser.add_argument("--rim-profile", choices=RIM_PROFILES)
@@ -134,17 +149,23 @@ def main() -> None:
                         help="Locator clearance per side in mm (default: 0.4).")
     parser.add_argument("--output", type=Path, default=Path("output"))
     args = parser.parse_args()
+    if args.button is not None and args.rim_stop_snap != "1x4":
+        parser.error("--button requires --rim-stop-snap 1x4.")
     if args.flush_snap or args.rim_stop_snap:
         if any(option is not None for option in (
             args.opening, args.rim_profile, args.rim_opening, args.lower_opening,
             args.rim_corner_radius, args.clearance,
         )):
-            parser.error("Snap-in lids use fixed dimensions. Only --output can be combined with them.")
-        layout = "2x4" if args.rim_stop_snap else args.flush_snap
+            parser.error("Snap-in lids use fixed bore and rim dimensions.")
+        layout = args.rim_stop_snap or args.flush_snap
+        _, _, default_button = SNAP_LAYOUTS[layout]
+        button = args.button or default_button
+        opening, _ = SNAP_BUTTONS[button]
         variant = "rim_stop" if args.rim_stop_snap else "flush"
-        name = f"obsf30_{layout}_{variant}_snap_lid_30p5_mw47599"
-        export_lid(make_flush_snap_lid(layout, rim_stop=args.rim_stop_snap), args.output / name,
-                   button_face_down=layout == "2x4")
+        opening_label = f"{opening:.1f}".replace(".", "p")
+        name = f"{button}_{layout}_{variant}_snap_lid_{opening_label}_mw47599"
+        export_lid(make_flush_snap_lid(layout, rim_stop=bool(args.rim_stop_snap), button=button),
+                   args.output / name, button_face_down=layout != "1x1")
         return
 
     profile = args.rim_profile or "reference"

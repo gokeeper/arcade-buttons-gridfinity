@@ -340,7 +340,7 @@ def main() -> None:
     report = validate_all(p, shapes, args.output)
     (args.output / f"validation{suffix}.json").write_text(json.dumps(report, indent=2) + "\n")
     from preview import render_dimension_drawing, render_preview
-    render_preview(model, p, args.output / "preview.png")
+    render_preview(model, p, args.output / "holder_preview.png")
     render_dimension_drawing(p, args.output / "button_dimensions.png")
     print(json.dumps(report, indent=2))
 

@@ -136,42 +136,53 @@ def test_flush_snap_lid_has_single_bore_and_recess():
         assert lid.isInside(cq.Vector(sign * 13, sign * 13, 2))
 
 
-@pytest.mark.parametrize("rim_stop, width, length", [
-    (False, 79, 163), (True, 83.5, 167.5),
+@pytest.mark.parametrize("layout, button, rim_stop, width, length, xs, ys, opening, recess", [
+    ("2x4", None, False, 79, 163, (-21, 21), (-63, -21, 21, 63), 30.5, 34.6),
+    ("2x4", None, True, 83.5, 167.5, (-21, 21), (-63, -21, 21, 63), 30.5, 34.6),
+    ("1x4", None, True, 41.5, 167.5, (0,), (-64, -32, 0, 32, 64), 24.3, 28.6),
+    ("1x4", "obsf30", True, 41.5, 167.5, (0,), (-63, -21, 21, 63), 30.5, 34.6),
 ])
-def test_2x4_snap_lid_places_eight_buttons_on_grid(rim_stop, width, length):
-    lid = make_flush_snap_lid("2x4", rim_stop=rim_stop)
+def test_multi_button_snap_lid_places_buttons_at_expected_centers(
+    layout, button, rim_stop, width, length, xs, ys, opening, recess,
+):
+    lid = make_flush_snap_lid(layout, rim_stop=rim_stop, button=button)
     assert lid.isValid() and len(lid.Solids()) == 1
     bounds = lid.BoundingBox()
     assert (bounds.xlen, bounds.ylen, bounds.zlen) == pytest.approx((width, length, 3.2))
 
-    centers = {(x, y) for x in (-21, 21) for y in (-63, -21, 21, 63)}
-    for face, radius in ((max(lid.Faces(), key=lambda f: f.Center().z), 15.25),
-                         (min(lid.Faces(), key=lambda f: f.Center().z), 17.3)):
+    centers = {(x, y) for x in xs for y in ys}
+    for face, radius in ((max(lid.Faces(), key=lambda f: f.Center().z), opening / 2),
+                         (min(lid.Faces(), key=lambda f: f.Center().z), recess / 2)):
         holes = [wire.Edges()[0] for wire in face.innerWires()]
-        assert len(holes) == 8
+        assert len(holes) == len(centers)
         assert {(round(edge.Center().x, 6), round(edge.Center().y, 6)) for edge in holes} == centers
-        assert [edge.radius() for edge in holes] == pytest.approx([radius] * 8)
+        assert [edge.radius() for edge in holes] == pytest.approx([radius] * len(centers))
     if rim_stop:
         # The four midpoints span the rim above the locator, with a stop
         # shoulder 2 mm above the bottom of the lid.
-        for x, y in ((-41, 0), (41, 0), (0, -83), (0, 83)):
+        x_edge, y_edge = width / 2 - 0.75, length / 2 - 0.75
+        for x, y in ((-x_edge, 0), (x_edge, 0), (0, -y_edge), (0, y_edge)):
             assert not lid.isInside(cq.Vector(x, y, 1.99))
             assert lid.isInside(cq.Vector(x, y, 2.01))
 
 
-@pytest.mark.parametrize("args, variant, width, length, corner_radius", [
-    (["--flush-snap", "2x4"], "flush", 79, 163, 3),
-    (["--rim-stop-snap"], "rim_stop", 83.5, 167.5, 3.75),
+@pytest.mark.parametrize("args, name, width, length, corner_radius, count, opening", [
+    (["--flush-snap", "2x4"], "obsf30_2x4_flush_snap_lid_30p5", 79, 163, 3, 8, 30.5),
+    (["--rim-stop-snap"], "obsf30_2x4_rim_stop_snap_lid_30p5", 83.5, 167.5, 3.75, 8, 30.5),
+    (["--rim-stop-snap", "1x4"], "obsf24_1x4_rim_stop_snap_lid_24p3", 41.5, 167.5, 3.75, 5, 24.3),
+    (
+        ["--rim-stop-snap", "1x4", "--button", "obsf30"],
+        "obsf30_1x4_rim_stop_snap_lid_30p5", 41.5, 167.5, 3.75, 4, 30.5,
+    ),
 ])
-def test_2x4_stl_exports_button_face_on_bed(
-    monkeypatch, tmp_path, args, variant, width, length, corner_radius,
+def test_multi_button_stl_exports_button_face_on_bed(
+    monkeypatch, tmp_path, args, name, width, length, corner_radius, count, opening,
 ):
     monkeypatch.setattr(sys, "argv", [
         "button_lid.py", *args, "--output", str(tmp_path),
     ])
     lid_main()
-    path = tmp_path / f"obsf30_2x4_{variant}_snap_lid_30p5_mw47599.stl"
+    path = tmp_path / f"{name}_mw47599.stl"
     facets = np.fromfile(path, offset=84, dtype=[
         ("normal", "<f4", 3), ("vertices", "<f4", (3, 3)), ("attributes", "<u2"),
     ])
@@ -179,9 +190,11 @@ def test_2x4_stl_exports_button_face_on_bed(
     normals = np.cross(vertices[:, 1] - vertices[:, 0], vertices[:, 2] - vertices[:, 0])
     down = normals[:, 2] < -1e-6
     # Every downward face must touch the build plate. In the reversed export
-    # the eight ring-shaped shoulders instead hang above it at Z = 0.8.
+    # the ring-shaped shoulders instead hang above it at Z = 0.8.
     assert down.any()
     assert vertices[:, :, 2].min() == pytest.approx(0, abs=1e-6)
     assert np.allclose(vertices[down, :, 2], 0, atol=1e-6)
-    expected_bed_area = width * length - (4 - np.pi) * corner_radius**2 - 8 * np.pi * 15.25**2
+    expected_bed_area = (
+        width * length - (4 - np.pi) * corner_radius**2 - count * np.pi * (opening / 2)**2
+    )
     assert -normals[down, 2].sum() / 2 == pytest.approx(expected_bed_area, abs=5)

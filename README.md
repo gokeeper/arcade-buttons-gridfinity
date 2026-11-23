@@ -1,23 +1,21 @@
 # Arcade Buttons × Gridfinity
 
-Parametric 3D-printable storage for one Sanwa OBSF-30 snap-in button.
-The **1×1×6U holder** seats the flange at the top. The button rises **6.5 mm
-above the rim** and the flange overhangs two open side cutouts for lifting.
-The terminals hang **3.5 mm above the floor**. Use the recessed 1×1×7U bin
-when loaded stacking matters.
+Printable Gridfinity storage for Sanwa OBSF-24 and OBSF-30 arcade buttons.
+Choose a [standalone 1×1 holder](#single-button-holders) or a
+[drop-in lid](#drop-in-lids-for-existing-bins) for an existing bin.
 
-**Status: digitally validated prototype; physical fit has not been verified.**
-Use a fit coupon before printing a full bin. The separate lid prototypes below
-let you reuse an empty bin. OBSF-24 models are planned.
+![CAD views of the 1×1 holders, 1×1 flush lid, both 1×4 rim-stop lids, and the 2×4 rim-stop lid](output/preview.png)
 
-![CAD preview and section](output/preview.png)
+The designs are digitally validated prototypes. Printed fit and clip
+engagement still need a physical check.
 
-The upper-right panel shows the original side view in a cut through the finger openings.
-The lower-right detail cuts through the supporting ledge at 90° to the slots.
-The red line marks the 0.80 mm radial contact between the flange and the seat.
-The original dimension drawing appears at lower left.
+## Single-button holders
 
-## Files
+The **1×1×6U holder** seats one OBSF-30 with its cap 6.5 mm above the rim and
+its terminals 3.5 mm above the floor. Two open side cutouts let you lift the
+button by its flange. Use the **1×1×7U recessed bin** when you want to stack
+another bin above a loaded button. Start with a fit coupon before printing
+a full holder.
 
 - [Saved design plan](PLAN.md)
 - Exposed-flange holder [STL](output/obsf30_1x1_6u_exposed.stl) and [STEP](output/obsf30_1x1_6u_exposed.step)
@@ -32,6 +30,57 @@ The original dimension drawing appears at lower left.
 - [Editable CadQuery source](button_bin.py)
 
 ## Drop-in lids for existing bins
+
+The multi-button lids use rounded bin rims from ABDELat's Ultimate Gridfinity
+Bins collection. Choose the matching 1×4 or 2×4 footprint and check that the
+bin has enough depth for the button terminals.
+[Bin collection](https://makerworld.com/en/models/47599-ultimate-gridfinity-bins-collection-parametric)
+
+### Five-button 1×4 rim-stop lid for Sanwa OBSF-24
+
+The [STL](output/obsf24_1x4_rim_stop_snap_lid_24p3_mw47599.stl) and
+[STEP](output/obsf24_1x4_rim_stop_snap_lid_24p3_mw47599.step) hold five
+buttons in a straight row on 32 mm centers. The 27.2 mm flanges have
+4.8 mm of space between neighbors and 6.15 mm at each end of the row.
+[OBSF-24 dimension drawing](https://m.media-amazon.com/images/I/51gVxMsMtcL.jpg)
+
+The 41.5 × 167.5 mm lid uses five 24.3 mm bores with 28.6 mm underside
+recesses. Each recess leaves a 2.4 mm clip engagement thickness. The
+full rim stop sits 1.2 mm above the bin rim, and the 37 × 163 mm rounded
+locator extends 2 mm into the opening.
+
+Checks against the supplied `1x4x7u.stl` found about 0.35 mm of
+clearance around the locator and at least 7.5 mm beneath the bare
+terminal tips at all five positions. Printed rim fit and clip
+engagement still need a physical check.
+
+Print the STL in PETG as imported, with the button-facing side flat on
+the bed and the clip recesses facing up.
+
+```bash
+/home/gkp/codes/.headless/bin/python button_lid.py --rim-stop-snap 1x4
+```
+
+### Four-button 1×4 rim-stop lid for Sanwa OBSF-30
+
+The [STL](output/obsf30_1x4_rim_stop_snap_lid_30p5_mw47599.stl) and
+[STEP](output/obsf30_1x4_rim_stop_snap_lid_30p5_mw47599.step) fit the
+supplied `1x4x7u.stl` bin. The 41.5 × 167.5 mm lid holds four buttons on
+42 mm centers, leaving 8.8 mm between adjacent flanges. Each 30.5 mm
+opening has a 34.6 mm underside recess and a 2.4 mm clip engagement
+thickness.
+
+The full rim stop raises the button face 1.2 mm above the rim. Checks
+against the bin mesh found 0.35 mm of locator clearance per side and
+at least 7.7 mm below the bare terminal tips. Printed fit and clip
+engagement still need a physical check.
+
+Print the STL in PETG as imported, with the button-facing side on the
+bed and the clip recesses facing up.
+
+```bash
+/home/gkp/codes/.headless/bin/python button_lid.py --rim-stop-snap 1x4 --button obsf30
+```
 
 ### Eight-button 2×4 lid with a rim stop
 
@@ -137,44 +186,43 @@ widths and corner radius:
   --rim-opening 40.3 --lower-opening 37.9 --rim-corner-radius 3.15
 ```
 
-## Button drawing and dimensions
+## Button drawings and dimensions
 
 ![Shaped OBSF-30 reference with dimensions in millimetres](output/button_dimensions.png)
 
-These dimensions come from the [exact reference drawing](https://m.media-amazon.com/images/I/51oVK7HhGFL.jpg):
+| Button feature | OBSF-30 (mm) | OBSF-24 (mm) |
+|---|---:|---:|
+| Fixed flange diameter | 33.2 | 27.2 |
+| Moving cap diameter | 25.0 | 19.5 |
+| Maximum dimensioned body diameter | 29.5 | 23.5 |
+| Top to flange underside | 6.5 | 5.8 |
+| Cap height above fixed flange top | 3.5 | 3.0 |
+| Flange underside to lower housing plane | 19.2 | 18.2 |
+| Lower housing plane to terminal tips | 12.5 | 13.8 |
+| Flange underside to terminal tips | 31.7 | 32.0 |
+| **Overall top-to-tip height** | **38.2** | **37.8** |
 
-| Button feature | Millimetres |
-|---|---:|
-| Fixed flange diameter | 33.2 |
-| Moving cap diameter | 25.0 |
-| Maximum dimensioned body diameter | 29.5 |
-| Top to flange underside | 6.5 |
-| Cap height above fixed flange top | 3.5 |
-| Flange underside to lower housing plane | 19.2 |
-| Lower housing plane to terminal tips | 12.5 |
-| Flange underside to terminal tips | 31.7 |
-| **Overall top-to-tip height** | **38.2 = 6.5 + 31.7** |
+The below-flange dimension determines how much space the button needs
+under its mounting surface. [OBSF-30 source drawing](https://m.media-amazon.com/images/I/51oVK7HhGFL.jpg) ·
+[OBSF-24 source drawing](https://m.media-amazon.com/images/I/51gVxMsMtcL.jpg)
 
-**31.7 mm is measured from the flange underside.** The exposed 6U holder
-puts that underside at the rim. The recessed design needs 7U to clear both
-the floor and the upper bin.
-
-The CAD reference now shows the rounded fixed flange, moving cap, barrel,
-retention clips, lower housing, and terminal blades. Its dimensioned extents
-follow the drawing. Undimensioned clip shapes, housing depth, barrel details,
-and terminal spacing are illustrative; the drawing does not fully specify
-those features for manufacturing or prove their fit.
+The shaped OBSF-30 reference uses the drawing's dimensioned extents.
+Clip shapes, housing details, and terminal spacing are approximate.
 
 <details>
-<summary>Exact source drawing</summary>
+<summary>Original OBSF-30 dimension drawing</summary>
 
 ![Original OBSF-30 dimension drawing](docs/obsf30-dimensions.jpg)
-
-Source: [Amazon-hosted dimension image](https://m.media-amazon.com/images/I/51oVK7HhGFL.jpg).
 
 </details>
 
 ## Holder and stacking bin dimensions
+
+![Exposed holder CAD sections showing terminal clearance, finger openings, and flange support](output/holder_preview.png)
+
+The exposed holder's XZ section passes through the finger openings. The
+enlarged YZ section shows the supporting ledge, with the 0.80 mm radial
+contact marked in red.
 
 The exposed holder measures 41.5 × 41.5 × 42 mm. Its side cutouts are 10 mm
 wide and 4.5 mm deep. The Gridfinity foot fits a baseplate, and the exposed
@@ -207,7 +255,7 @@ The relief dimensions are initial allowances, not measured dimensions of the
 uncompressed clips. The button must be oriented with its two clips pointing
 along the long direction of the relief opening (X). No clip compression should
 be needed. Clear, silent, RG, screw-in, and other brands are not qualified by
-this first model. OBSF-24 and lids for other bin profiles are planned follow-ups.
+this first model.
 
 The Gridfinity base follows the common 4.75 mm foot profile and a 41.5 mm body
 on a 42 mm grid. The stacking socket uses a 4.4 mm theoretical profile trimmed
@@ -216,7 +264,7 @@ on the [community reference](https://github.com/gridfinity-unofficial/specificat
 Physical compatibility with your particular baseplate and other bins still
 needs checking.
 
-## Print and fit sequence
+## Print and fit the standalone holder
 
 1. Print the **31.0 mm fit coupon** flat with its engraved number facing up:
    PETG, 0.4 mm nozzle, 0.2 mm layers, four perimeters, no supports. Use your
@@ -253,10 +301,18 @@ Install dependencies into that environment if needed:
 /home/gkp/codes/.headless/bin/pip install -r requirements.txt
 ```
 
-Run from the repository root to generate the exposed 6U holder and its preview.
+Run from the repository root to generate the exposed 6U holder and its
+section drawing (`output/holder_preview.png`).
 
 ```bash
 /home/gkp/codes/.headless/bin/python button_bin.py
+```
+
+Regenerate the README overview (`output/preview.png`) from the current CAD
+models with the preview script.
+
+```bash
+/home/gkp/codes/.headless/bin/python preview.py
 ```
 
 Pass a JSON configuration to customize the holder. Include both
@@ -289,17 +345,15 @@ Overall height is now a derived value, not a configurable field.
 
 ## Validation
 
-Every generation checks connected valid solids, STEP round trips, exported STL edge
-closure and winding, flange support, and button-envelope removal. It also checks
-side access for the exposed holder and stacking clearance for the recessed bin.
-The button envelope deliberately overestimates the lower body but **omits clips**;
-these checks cannot establish physical clip fit or compensate for printer error.
+The holder generator checks connected solids, STEP round trips, STL edge closure
+and winding, flange support, and the button removal path. It checks finger access
+on the exposed holder and stacking clearance on the recessed bin. The holder
+clearance tests use a simplified envelope for the body and flange.
 
-The geometry regression suite checks unsafe parameter combinations, cradle
-overhangs, flange support, continuous clip reliefs, a larger 8U variant, and
-the exact drawing's vertical datums. It rejects the unsafe 6U case and checks
-the shaped reference's height. It also checks the exposed flange's position
-and removal path. To run the suite:
+The lid generator checks connected solids and watertight, consistently wound
+STLs. Geometry tests cover cradle overhangs, clip reliefs, button dimensions,
+snap-lid hole positions and recesses, rim stops, and multi-button STL print
+orientation. Run the tests from the repository root.
 
 ```bash
 /home/gkp/codes/.headless/bin/pip install pytest
@@ -308,7 +362,6 @@ and removal path. To run the suite:
 
 ## Planned models
 
-- Sanwa OBSF-24 with its own button dimensions.
 - Lid fits for additional bin profiles, including the
   [Simple Gridfinity Box](https://makerworld.com/en/models/784676-simple-gridfinity-box-stackable-many-sizes).
 - Larger layouts using the validated button cradle on the 42 mm grid.
