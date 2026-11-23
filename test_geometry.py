@@ -136,11 +136,14 @@ def test_flush_snap_lid_has_single_bore_and_recess():
         assert lid.isInside(cq.Vector(sign * 13, sign * 13, 2))
 
 
-def test_2x4_flush_snap_lid_places_eight_buttons_on_grid():
-    lid = make_flush_snap_lid("2x4")
+@pytest.mark.parametrize("rim_stop, width, length", [
+    (False, 79, 163), (True, 83.5, 167.5),
+])
+def test_2x4_snap_lid_places_eight_buttons_on_grid(rim_stop, width, length):
+    lid = make_flush_snap_lid("2x4", rim_stop=rim_stop)
     assert lid.isValid() and len(lid.Solids()) == 1
     bounds = lid.BoundingBox()
-    assert (bounds.xlen, bounds.ylen, bounds.zlen) == pytest.approx((79, 163, 3.2))
+    assert (bounds.xlen, bounds.ylen, bounds.zlen) == pytest.approx((width, length, 3.2))
 
     centers = {(x, y) for x in (-21, 21) for y in (-63, -21, 21, 63)}
     for face, radius in ((max(lid.Faces(), key=lambda f: f.Center().z), 15.25),
@@ -149,14 +152,26 @@ def test_2x4_flush_snap_lid_places_eight_buttons_on_grid():
         assert len(holes) == 8
         assert {(round(edge.Center().x, 6), round(edge.Center().y, 6)) for edge in holes} == centers
         assert [edge.radius() for edge in holes] == pytest.approx([radius] * 8)
+    if rim_stop:
+        # The four midpoints span the rim above the locator, with a stop
+        # shoulder 2 mm above the bottom of the lid.
+        for x, y in ((-41, 0), (41, 0), (0, -83), (0, 83)):
+            assert not lid.isInside(cq.Vector(x, y, 1.99))
+            assert lid.isInside(cq.Vector(x, y, 2.01))
 
 
-def test_2x4_stl_exports_button_face_on_bed(monkeypatch, tmp_path):
+@pytest.mark.parametrize("args, variant, width, length, corner_radius", [
+    (["--flush-snap", "2x4"], "flush", 79, 163, 3),
+    (["--rim-stop-snap"], "rim_stop", 83.5, 167.5, 3.75),
+])
+def test_2x4_stl_exports_button_face_on_bed(
+    monkeypatch, tmp_path, args, variant, width, length, corner_radius,
+):
     monkeypatch.setattr(sys, "argv", [
-        "button_lid.py", "--flush-snap", "2x4", "--output", str(tmp_path),
+        "button_lid.py", *args, "--output", str(tmp_path),
     ])
     lid_main()
-    path = tmp_path / "obsf30_2x4_flush_snap_lid_30p5_mw47599.stl"
+    path = tmp_path / f"obsf30_2x4_{variant}_snap_lid_30p5_mw47599.stl"
     facets = np.fromfile(path, offset=84, dtype=[
         ("normal", "<f4", 3), ("vertices", "<f4", (3, 3)), ("attributes", "<u2"),
     ])
@@ -168,5 +183,5 @@ def test_2x4_stl_exports_button_face_on_bed(monkeypatch, tmp_path):
     assert down.any()
     assert vertices[:, :, 2].min() == pytest.approx(0, abs=1e-6)
     assert np.allclose(vertices[down, :, 2], 0, atol=1e-6)
-    expected_bed_area = 79 * 163 - (4 - np.pi) * 3**2 - 8 * np.pi * 15.25**2
+    expected_bed_area = width * length - (4 - np.pi) * corner_radius**2 - 8 * np.pi * 15.25**2
     assert -normals[down, 2].sum() / 2 == pytest.approx(expected_bed_area, abs=5)

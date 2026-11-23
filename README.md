@@ -33,6 +33,22 @@ The original dimension drawing appears at lower left.
 
 ## Drop-in lids for existing bins
 
+### Eight-button 2×4 lid with a rim stop
+
+Use the [rim-stop STL](output/obsf30_2x4_rim_stop_snap_lid_30p5_mw47599.stl)
+for the supplied `2x4x7u.stl` if the flush lid drops into the bin. The full
+lip rests on all four sides of the rim and lifts the button face by 1.2 mm.
+A 2.0 mm locator fits inside the opening to keep the lid centered. The eight
+30.5 mm openings and 2.4 mm clip engagement thickness match the flush version.
+
+Print in PETG as imported, with the broad button face on the bed and the clip
+recesses facing up. The model is also available as
+[STEP](output/obsf30_2x4_rim_stop_snap_lid_30p5_mw47599.step).
+
+```bash
+/home/gkp/codes/.headless/bin/python button_lid.py --rim-stop-snap
+```
+
 ### Flush eight-button lid for the 2×4 bin
 
 The [2×4 lid STL](output/obsf30_2x4_flush_snap_lid_30p5_mw47599.stl)

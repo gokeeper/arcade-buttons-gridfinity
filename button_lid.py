@@ -15,6 +15,8 @@ LID_WIDTH = 41.5
 FLUSH_LID_WIDTH = 37.0
 FLUSH_LID_THICKNESS = 3.2
 FLUSH_LID_CORNER_RADIUS = 3.0
+RIM_STOP_HEIGHT = 1.2
+RIM_STOP_CORNER_RADIUS = 3.75
 SNAP_OPENING = 30.5
 SNAP_RECESS_DIAMETER = 34.6
 GRID_PITCH = 42.0
@@ -68,13 +70,20 @@ def make_lid(
     return lid.clean()
 
 
-def make_flush_snap_lid(layout: str = "1x1") -> cq.Shape:
-    """Seat inside the MakerWorld 47599 rim with one snap-in bore per cell."""
+def make_flush_snap_lid(layout: str = "1x1", *, rim_stop: bool = False) -> cq.Shape:
+    """Build a snap-in lid with one bore per cell and an optional rim stop."""
     columns, rows = FLUSH_LAYOUTS[layout]
     width = FLUSH_LID_WIDTH + (columns - 1) * GRID_PITCH
     length = FLUSH_LID_WIDTH + (rows - 1) * GRID_PITCH
-    lid = (cq.Workplane("XY").rect(width, length).extrude(FLUSH_LID_THICKNESS)
+    locator_height = FLUSH_LID_THICKNESS - RIM_STOP_HEIGHT if rim_stop else FLUSH_LID_THICKNESS
+    lid = (cq.Workplane("XY").rect(width, length).extrude(locator_height)
            .edges("|Z").fillet(FLUSH_LID_CORNER_RADIUS).val())
+    if rim_stop:
+        extra_width = LID_WIDTH - FLUSH_LID_WIDTH
+        flange = (cq.Workplane("XY", origin=(0, 0, locator_height))
+                  .rect(width + extra_width, length + extra_width).extrude(RIM_STOP_HEIGHT)
+                  .edges("|Z").fillet(RIM_STOP_CORNER_RADIUS).val())
+        lid = lid.fuse(flange)
     recess_depth = FLUSH_LID_THICKNESS - PLATE_THICKNESS
     cuts = []
     for column in range(columns):
@@ -106,8 +115,15 @@ def export_lid(lid: cq.Shape, path: Path, *, button_face_down: bool = False) -> 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--flush-snap", nargs="?", const="1x1", choices=FLUSH_LAYOUTS,
-                        help="Export a 30.5 mm flush snap-in lid for MakerWorld 47599 (default: 1x1).")
+    snap_design = parser.add_mutually_exclusive_group()
+    snap_design.add_argument(
+        "--flush-snap", nargs="?", const="1x1", choices=FLUSH_LAYOUTS,
+        help="Export a 30.5 mm flush snap-in lid for MakerWorld 47599 (default: 1x1).",
+    )
+    snap_design.add_argument(
+        "--rim-stop-snap", action="store_true",
+        help="Export the 2x4 snap-in lid with a full rim stop for MakerWorld 47599.",
+    )
     parser.add_argument("--opening", type=float, choices=(30.2, 30.6), action="append",
                         help="Body opening in mm. Omit to export both sizes.")
     parser.add_argument("--rim-profile", choices=RIM_PROFILES)
@@ -118,15 +134,16 @@ def main() -> None:
                         help="Locator clearance per side in mm (default: 0.4).")
     parser.add_argument("--output", type=Path, default=Path("output"))
     args = parser.parse_args()
-    if args.flush_snap:
+    if args.flush_snap or args.rim_stop_snap:
         if any(option is not None for option in (
             args.opening, args.rim_profile, args.rim_opening, args.lower_opening,
             args.rim_corner_radius, args.clearance,
         )):
-            parser.error("--flush-snap uses fixed dimensions. Only --output can be combined with it.")
-        layout = args.flush_snap
-        name = f"obsf30_{layout}_flush_snap_lid_30p5_mw47599"
-        export_lid(make_flush_snap_lid(layout), args.output / name,
+            parser.error("Snap-in lids use fixed dimensions. Only --output can be combined with them.")
+        layout = "2x4" if args.rim_stop_snap else args.flush_snap
+        variant = "rim_stop" if args.rim_stop_snap else "flush"
+        name = f"obsf30_{layout}_{variant}_snap_lid_30p5_mw47599"
+        export_lid(make_flush_snap_lid(layout, rim_stop=args.rim_stop_snap), args.output / name,
                    button_face_down=layout == "2x4")
         return
 
