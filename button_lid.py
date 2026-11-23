@@ -88,11 +88,18 @@ def make_flush_snap_lid(layout: str = "1x1") -> cq.Shape:
     return lid.cut(*cuts).clean()
 
 
-def export_lid(lid: cq.Shape, path: Path) -> None:
+def export_lid(lid: cq.Shape, path: Path, *, button_face_down: bool = False) -> None:
     if not lid.isValid() or len(lid.Solids()) != 1:
         raise RuntimeError("Expected one valid lid solid.")
     path.parent.mkdir(parents=True, exist_ok=True)
-    export_pair(lid, path)
+    stl_shape = None
+    if button_face_down:
+        # Starting on the recessed face leaves eight unsupported shoulders.
+        # Flip the solid so each hole widens as the print reaches its recess.
+        stl_shape = lid.rotate((0, 0, 0), (1, 0, 0), 180).translate(
+            (0, 0, FLUSH_LID_THICKNESS)
+        )
+    export_pair(lid, path, stl_shape=stl_shape)
     mesh_report(path.with_suffix(".stl"))
     print(f"{path.with_suffix('.stl')} ({lid.Volume():.0f} mm³ of CAD solid)")
 
@@ -119,7 +126,8 @@ def main() -> None:
             parser.error("--flush-snap uses fixed dimensions. Only --output can be combined with it.")
         layout = args.flush_snap
         name = f"obsf30_{layout}_flush_snap_lid_30p5_mw47599"
-        export_lid(make_flush_snap_lid(layout), args.output / name)
+        export_lid(make_flush_snap_lid(layout), args.output / name,
+                   button_face_down=layout == "2x4")
         return
 
     profile = args.rim_profile or "reference"

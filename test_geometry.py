@@ -1,12 +1,14 @@
 """Geometry regressions for custom fit settings and printability."""
 
 from dataclasses import replace
+import sys
 
 import cadquery as cq
 import numpy as np
 import pytest
 
 from button_bin import Parameters, button_envelope, button_reference, foot, make_bin
+from button_lid import main as lid_main
 from button_lid import LOCATOR_DEPTH, PLATE_THICKNESS, make_flush_snap_lid, make_lid
 
 
@@ -147,3 +149,24 @@ def test_2x4_flush_snap_lid_places_eight_buttons_on_grid():
         assert len(holes) == 8
         assert {(round(edge.Center().x, 6), round(edge.Center().y, 6)) for edge in holes} == centers
         assert [edge.radius() for edge in holes] == pytest.approx([radius] * 8)
+
+
+def test_2x4_stl_exports_button_face_on_bed(monkeypatch, tmp_path):
+    monkeypatch.setattr(sys, "argv", [
+        "button_lid.py", "--flush-snap", "2x4", "--output", str(tmp_path),
+    ])
+    lid_main()
+    path = tmp_path / "obsf30_2x4_flush_snap_lid_30p5_mw47599.stl"
+    facets = np.fromfile(path, offset=84, dtype=[
+        ("normal", "<f4", 3), ("vertices", "<f4", (3, 3)), ("attributes", "<u2"),
+    ])
+    vertices = facets["vertices"].astype(float)
+    normals = np.cross(vertices[:, 1] - vertices[:, 0], vertices[:, 2] - vertices[:, 0])
+    down = normals[:, 2] < -1e-6
+    # Every downward face must touch the build plate. In the reversed export
+    # the eight ring-shaped shoulders instead hang above it at Z = 0.8.
+    assert down.any()
+    assert vertices[:, :, 2].min() == pytest.approx(0, abs=1e-6)
+    assert np.allclose(vertices[down, :, 2], 0, atol=1e-6)
+    expected_bed_area = 79 * 163 - (4 - np.pi) * 3**2 - 8 * np.pi * 15.25**2
+    assert -normals[down, 2].sum() / 2 == pytest.approx(expected_bed_area, abs=5)

@@ -294,9 +294,10 @@ def button_reference(p: Parameters) -> cq.Shape:
     return model.clean()
 
 
-def export_pair(shape: cq.Shape, path: Path) -> None:
+def export_pair(shape: cq.Shape, path: Path, *, stl_shape: cq.Shape | None = None) -> None:
+    """Keep the STEP assembly orientation and optionally orient the STL for printing."""
     cq.exporters.export(shape, str(path.with_suffix(".step")))
-    cq.exporters.export(shape, str(path.with_suffix(".stl")),
+    cq.exporters.export(shape if stl_shape is None else stl_shape, str(path.with_suffix(".stl")),
                         tolerance=0.025, angularTolerance=0.08)
 
 

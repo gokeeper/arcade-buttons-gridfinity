@@ -41,9 +41,11 @@ rim of the supplied `2x4x7u.stl`. The 79 × 163 × 3.2 mm plate seats
 flush and holds eight OBSF-30 buttons on 42 mm centers. Each 30.5 mm
 opening has an underside recess that leaves 2.4 mm for the clips.
 
-Print in PETG with the flat button-facing side on the bed and the
-recessed underside facing up. Lift the loaded lid out to squeeze the
-clips from underneath.
+The 2×4 STL is already oriented for printing in PETG, with the flat
+button-facing side on the bed and the eight recessed openings facing up.
+If you sliced the earlier file, replace it and slice again so the new
+orientation takes effect. Lift the loaded lid out to squeeze the clips
+from underneath.
 
 ```bash
 /home/gkp/codes/.headless/bin/python button_lid.py --flush-snap 2x4
