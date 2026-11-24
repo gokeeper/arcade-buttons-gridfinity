@@ -22,6 +22,11 @@ from arcade_bin import make_lid as make_arcade_lid
 from balltop_bin import BALL_DIAMETER, seated_ball_center_z
 from button_bin import Parameters, button_reference, foot
 from button_lid import make_flush_snap_lid
+from joystick_bin import (
+    HANDLE_REACH, PLATE_LENGTH, PLATE_SEAT_Z, PLATE_THICKNESS, PLATE_WIDTH, PLATE_Y,
+    SHAFT_Z, centered_box,
+)
+from joystick_bin import make_bin as make_joystick_bin
 
 
 PREVIEW_BACKGROUND = "#f4f6f8"
@@ -103,6 +108,51 @@ def render_arcade_bin(path: Path) -> None:
     for ax, (label, elevation, overlays) in zip(axes, views):
         view = rasterize(bin_body, (640, 550), azimuth=150, elevation=elevation, overlays=overlays)
         ax.imshow(view)
+        ax.set_title(label, fontsize=15, color="#172c3d", pad=10)
+        ax.axis("off")
+    fig.subplots_adjust(left=0.035, right=0.965, bottom=0.035, top=0.90, wspace=0.08)
+    fig.savefig(path, dpi=160, facecolor=fig.get_facecolor())
+    plt.close(fig)
+
+
+def render_joystick_bin(path: Path) -> None:
+    bin_body = make_joystick_bin()
+    plate_front = PLATE_Y + PLATE_THICKNESS / 2
+    plate_back = PLATE_Y - PLATE_THICKNESS / 2
+    plate = centered_box(PLATE_LENGTH, PLATE_THICKNESS, PLATE_SEAT_Z,
+                         PLATE_SEAT_Z + PLATE_WIDTH, y=PLATE_Y)
+    plate = cq.Workplane(obj=plate).edges("|Y").fillet(1.5).val()
+    shaft_axis = cq.Vector(0, 1, 0)
+    holes = [cq.Solid.makeCylinder(2.75, PLATE_THICKNESS + 2,
+                                   cq.Vector(x, plate_back - 1, SHAFT_Z + z), shaft_axis)
+             for x in (-42.5, 42.5) for z in (-20, 20)]
+    plate = plate.cut(*holes)
+
+    # Illustrative hardware for scale and orientation.
+    housing = centered_box(62, 23, SHAFT_Z - 30, SHAFT_Z + 32, y=plate_back - 11.5)
+    ears = centered_box(75, 12, SHAFT_Z - 6, SHAFT_Z + 6, y=plate_back - 6)
+    pcb = centered_box(66, 1.6, SHAFT_Z - 35, SHAFT_Z + 35, y=plate_back - 23.8)
+    pcb = cq.Workplane(obj=pcb).edges("|Y").fillet(4).val()
+    gate = cq.Solid.makeCylinder(28, 10, cq.Vector(0, plate_back - 33, SHAFT_Z), shaft_axis)
+    connector = centered_box(10, 8, SHAFT_Z + 34, SHAFT_Z + 41, x=-18, y=plate_back - 22)
+    washer = cq.Solid.makeCylinder(23, 2, cq.Vector(0, plate_front, SHAFT_Z), shaft_axis)
+    ball_y = plate_front + HANDLE_REACH - BALL_DIAMETER / 2
+    shaft = cq.Solid.makeCylinder(5.5, ball_y - plate_front,
+                                  cq.Vector(0, plate_front, SHAFT_Z), shaft_axis)
+    ball = cq.Solid.makeSphere(BALL_DIAMETER / 2, cq.Vector(0, ball_y, SHAFT_Z),
+                               angleDegrees1=-90, angleDegrees2=90)
+    hardware = (
+        (plate, (202, 211, 218)), (housing.fuse(ears), (56, 63, 70)),
+        (pcb, (198, 148, 72)), (gate, (79, 91, 102)), (connector, (219, 217, 202)),
+        (washer, (56, 63, 70)),
+        (shaft, (187, 195, 202)), (ball, (204, 77, 62)),
+    )
+
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4.9), facecolor=PREVIEW_BACKGROUND)
+    for ax, (label, elevation, parts) in zip(axes, (("Joystick seated", 45, hardware),
+                                                   ("Integrated plate guides", 58, ()))):
+        ax.imshow(rasterize(bin_body, (640, 550), azimuth=60, elevation=elevation,
+                            overlays=parts))
         ax.set_title(label, fontsize=15, color="#172c3d", pad=10)
         ax.axis("off")
     fig.subplots_adjust(left=0.035, right=0.965, bottom=0.035, top=0.90, wspace=0.08)
@@ -310,3 +360,4 @@ if __name__ == "__main__":
     args.output.mkdir(parents=True, exist_ok=True)
     render_overview(args.output / "preview.png")
     render_arcade_bin(args.output / "arcade_3x3_preview.png")
+    render_joystick_bin(args.output / "jlf_tp_8yt_preview.png")

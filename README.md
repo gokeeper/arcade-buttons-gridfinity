@@ -4,7 +4,8 @@ Gridfinity storage for Sanwa OBSF-24 and OBSF-30 arcade buttons and
 35 mm LB-35 joystick ball tops. The [mixed 3×3 bin](#mixed-33-arcade-bin)
 holds eight buttons and one ball top. All four lid layouts come with and
 without an 8 mm lift tab. The [5U ball-top bin](#joystick-ball-top-bin)
-holds four balls in separate compartments.
+holds four balls in separate compartments. The [JLF-TP-8YT bin](#sanwa-jlf-tp-8yt-joystick-bin)
+holds one assembled joystick sideways.
 
 ## Mixed 3×3 arcade bin
 
@@ -119,6 +120,34 @@ These two remix files are shared under CC BY-SA 4.0.
 
 A 36 mm gauge cleared the straight removal path in all four positions in CAD.
 
+## Sanwa JLF-TP-8YT joystick bin
+
+![CAD preview of the sideways JLF-TP-8YT joystick in the bin and the empty bin with its two integrated plate guides](output/previews/jlf_tp_8yt_preview.png)
+
+[Print-ready STL](output/bins/jlf_tp_8yt_3x3_7u_bin.stl) ·
+[STEP](output/bins/jlf_tp_8yt_3x3_7u_bin.step)
+
+The **3×3×7U bin** has a 125.5 × 125.5 mm footprint and a 45.55 mm rim.
+The shaft lies horizontally with the LB-35 attached. Two printed-in guides
+capture the ends of the **95 × 54 mm mounting plate** in 2.3 mm slots with
+tapered entries. The top edge of the seated plate projects about 32 mm above
+the rim for gripping.
+
+Lower the joystick straight into the guides with the 5-pin connector facing
+up and the harness unplugged. The guide seats carry the joystick by the
+plate and provide 3 mm of floor clearance under the modeled PCB and
+restrictor envelope. Print feet down. Seating and removal were checked
+in CAD. The fit still needs a check with the physical joystick.
+
+The bottom-view drawing shows a 75 mm body span and 31 mm from the shaft
+center to the side opposite the connector. The CAD check allows 81 mm across
+the body and 40 mm below the shaft to accommodate the protrusions shown in
+the underside photo.
+[Reference dimensions](https://m.media-amazon.com/images/I/41RymBEab1L._AC_UF350,350_QL80_.jpg) ·
+[Dimensioned bottom view](https://www.diyretroarcade.com/cdn/shop/files/8MWfs.jpg) ·
+[Underside photo](https://www.arcadexpress.com/35-medium_default/sanwa-jlf-tp-8yt-arcade-joystick.jpg) ·
+[Sanwa JLF catalog, pp. 4–5](https://rs2006.co.jp/e/sanwaseimitsu/Sanwa2020.pdf#page=3)
+
 ## Regenerate
 
 From the repository root, use your Python environment with
@@ -133,6 +162,9 @@ python -m pip install -r requirements.txt
 ```bash
 # Mixed 3×3 bin and both L-shaped lids
 python arcade_bin.py
+
+# Sideways Sanwa JLF-TP-8YT joystick bin
+python joystick_bin.py
 
 # 1×4 lid for five OBSF-24 buttons
 python button_lid.py --rim-stop-snap 1x4

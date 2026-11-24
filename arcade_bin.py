@@ -62,13 +62,17 @@ def button_section(inset: float, corner_edge: float, bottom: float, top: float) 
     return outer.cut(ball_corner(corner_edge, bottom - 1, top + 1))
 
 
-def make_bin() -> cq.Shape:
+def make_3x3_blank() -> cq.Shape:
+    """Return the full-height 7U body with nine Gridfinity feet."""
     body = rounded_prism(FOOTPRINT, RIM_STOP_CORNER_RADIUS, FOOT_TOP_Z, BUTTON_RIM_Z)
     foot_profile = foot()
     feet = [foot_profile.translate((*cell_center(row, column), 0))
             for row in range(1, 4) for column in range(1, 4)]
-    body = body.fuse(*feet)
+    return body.fuse(*feet)
 
+
+def make_bin() -> cq.Shape:
+    body = make_3x3_blank()
     # The gap between the two cavity footprints forms the continuous dividers.
     cutter_top = BUTTON_RIM_Z + 1
     shared_cavity = button_section(WALL_THICKNESS, DIVIDER_BUTTON_EDGE, FLOOR_Z, cutter_top)
