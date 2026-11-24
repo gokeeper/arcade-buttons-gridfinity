@@ -121,42 +121,42 @@ A 36 mm gauge cleared the straight removal path in all four positions in CAD.
 
 ## Regenerate
 
-From the repository root, use the existing Python environment with
+From the repository root, use your Python environment with
 [CadQuery and Matplotlib](requirements.txt).
 The generators save models to `output/bins` and `output/lids`, and images
 to `output/previews`.
 
 ```bash
-/home/gkp/codes/.headless/bin/pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
 ```bash
 # Mixed 3×3 bin and both L-shaped lids
-/home/gkp/codes/.headless/bin/python arcade_bin.py
+python arcade_bin.py
 
 # 1×4 lid for five OBSF-24 buttons
-/home/gkp/codes/.headless/bin/python button_lid.py --rim-stop-snap 1x4
+python button_lid.py --rim-stop-snap 1x4
 
 # 1×4 lid for four OBSF-30 buttons
-/home/gkp/codes/.headless/bin/python button_lid.py --rim-stop-snap 1x4 --button obsf30
+python button_lid.py --rim-stop-snap 1x4 --button obsf30
 
 # 1×4 lift-tab lids
-/home/gkp/codes/.headless/bin/python button_lid.py --rim-stop-snap 1x4 --lift-tab
-/home/gkp/codes/.headless/bin/python button_lid.py --rim-stop-snap 1x4 --button obsf30 --lift-tab
+python button_lid.py --rim-stop-snap 1x4 --lift-tab
+python button_lid.py --rim-stop-snap 1x4 --button obsf30 --lift-tab
 
 # 2×4 lids for eight OBSF-30 buttons
-/home/gkp/codes/.headless/bin/python button_lid.py --rim-stop-snap 2x4
-/home/gkp/codes/.headless/bin/python button_lid.py --rim-stop-snap 2x4 --lift-tab
+python button_lid.py --rim-stop-snap 2x4
+python button_lid.py --rim-stop-snap 2x4 --lift-tab
 
 # README previews
-/home/gkp/codes/.headless/bin/python preview.py
+python preview.py
 ```
 
 To rebuild the ball-top bin, use the 1×4×7U mesh from the original bin
 collection as input to the [ball-top generator](balltop_bin.py).
 
 ```bash
-/home/gkp/codes/.headless/bin/python balltop_bin.py --source 1x4x7u.stl
+python balltop_bin.py --source 1x4x7u.stl
 ```
 
 The generators check the solids and exported STL meshes. Geometry tests cover
@@ -164,6 +164,6 @@ the bore layout, clip recesses, rim stops, print orientation, and the mixed
 bin's removal paths and terminal clearance.
 
 ```bash
-/home/gkp/codes/.headless/bin/pip install pytest
-/home/gkp/codes/.headless/bin/python -m pytest -q
+python -m pip install pytest
+python -m pytest -q
 ```
