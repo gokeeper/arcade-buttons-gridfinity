@@ -98,8 +98,8 @@ your bin before seating the loaded lid.
    loaded lid on the bin rim.
 3. To remove a button, lift the whole lid, squeeze the clips from underneath,
    and push the button out.
-4. Lift the ball top straight up. On the 3×3 bin, grasp it from the two
-   low outside edges with the lid still seated.
+4. On the mixed 3×3 bin, leave the button lid seated and grasp the loose
+   ball top from the two low outside edges to lift it straight up.
 
 Printed rim fit, clip engagement, and grip comfort still need a physical check.
 
@@ -124,17 +124,21 @@ A 36 mm gauge cleared the straight removal path in all four positions in CAD.
 
 ![9U bin with the two OBSF-30 buttons installed in the shaft-bay lid, alongside the same joystick with the lid removed to show the bare shaft and plate guides](output/previews/jlf_tp_8yt_preview.png)
 
-| Part | Rim height | Bare shaft relative to rim | Files |
+| Part | Rim height | Bare shaft position | Files |
 |---|---:|---|---|
-| 3×3×8U bin | 52.55 mm | 3.15 mm above | [STL](output/bins/jlf_tp_8yt_3x3_8u_bin.stl) · [STEP](output/bins/jlf_tp_8yt_3x3_8u_bin.step) |
-| 3×3×9U bin | 59.55 mm | 3.85 mm below | [STL](output/bins/jlf_tp_8yt_3x3_9u_bin.stl) · [STEP](output/bins/jlf_tp_8yt_3x3_9u_bin.step) |
-| 9U shaft-bay lid for two OBSF-30 buttons | — | 1.85 mm clearance under lid | [STL](output/lids/jlf_tp_8yt_3x3_9u_shaft_bay_lid.stl) · [STEP](output/lids/jlf_tp_8yt_3x3_9u_shaft_bay_lid.step) |
+| 3×3×8U bin | 52.55 mm | 3.15 mm above rim | [STL](output/bins/jlf_tp_8yt_3x3_8u_bin.stl) · [STEP](output/bins/jlf_tp_8yt_3x3_8u_bin.step) |
+| 3×3×9U bin | 59.55 mm | 3.85 mm below rim | [STL](output/bins/jlf_tp_8yt_3x3_9u_bin.stl) · [STEP](output/bins/jlf_tp_8yt_3x3_9u_bin.step) |
+| 9U shaft-bay lid for two OBSF-30 buttons | — | 1.85 mm below lid underside | [STL](output/lids/jlf_tp_8yt_3x3_9u_shaft_bay_lid.stl) · [STEP](output/lids/jlf_tp_8yt_3x3_9u_shaft_bay_lid.step) |
 
 Both bins have a 125.5 × 125.5 mm footprint. Unplug the harness, turn the
 5-pin connector upward and lower the 95 × 54 mm plate into the tapered
 2.3 mm slots. The seats hold its lower edge 23.2 mm above the base, leaving
 **3 mm between the floor and the modeled PCB and restrictor**. Both open bins
 also clear the LB-35 when attached. Remove the ball top to use the 9U lid.
+
+For drawer clearance, the seated mounting plate reaches 77.2 mm above the
+base in either bin. The highest point in the CAD model is the upward-facing
+connector at 91.2 mm. Check this height on your assembled joystick.
 
 The lid rests on the front and side rims. Each rear shoulder bears on
 about 63 mm² of the front ledge of its plate guide. A 2 mm deep locator
