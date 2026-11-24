@@ -62,9 +62,9 @@ def button_section(inset: float, corner_edge: float, bottom: float, top: float) 
     return outer.cut(ball_corner(corner_edge, bottom - 1, top + 1))
 
 
-def make_3x3_blank() -> cq.Shape:
-    """Return the full-height 7U body with nine Gridfinity feet."""
-    body = rounded_prism(FOOTPRINT, RIM_STOP_CORNER_RADIUS, FOOT_TOP_Z, BUTTON_RIM_Z)
+def make_3x3_blank(rim_z: float = BUTTON_RIM_Z) -> cq.Shape:
+    """Return a body up to the given rim with nine Gridfinity feet."""
+    body = rounded_prism(FOOTPRINT, RIM_STOP_CORNER_RADIUS, FOOT_TOP_Z, rim_z)
     foot_profile = foot()
     feet = [foot_profile.translate((*cell_center(row, column), 0))
             for row in range(1, 4) for column in range(1, 4)]

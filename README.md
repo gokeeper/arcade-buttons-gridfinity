@@ -2,10 +2,10 @@
 
 Gridfinity storage for Sanwa OBSF-24 and OBSF-30 arcade buttons and
 35 mm LB-35 joystick ball tops. The [mixed 3×3 bin](#mixed-33-arcade-bin)
-holds eight buttons and one ball top. All four lid layouts come with and
-without an 8 mm lift tab. The [5U ball-top bin](#joystick-ball-top-bin)
-holds four balls in separate compartments. The [JLF-TP-8YT bin](#sanwa-jlf-tp-8yt-joystick-bin)
-holds one assembled joystick sideways.
+holds eight buttons and one ball top. The mixed-bin and drop-in lids come
+with and without an 8 mm lift tab. The [5U ball-top bin](#joystick-ball-top-bin)
+holds four balls in separate compartments. The [8U and 9U joystick bins](#sanwa-jlf-tp-8yt-joystick-bin)
+hold a JLF-TP-8YT sideways. The 9U has a two-button lid over the shaft.
 
 ## Mixed 3×3 arcade bin
 
@@ -122,22 +122,36 @@ A 36 mm gauge cleared the straight removal path in all four positions in CAD.
 
 ## Sanwa JLF-TP-8YT joystick bin
 
-![CAD preview of the sideways JLF-TP-8YT joystick in the bin and the empty bin with its two integrated plate guides](output/previews/jlf_tp_8yt_preview.png)
+![9U bin with the two OBSF-30 buttons installed in the shaft-bay lid, alongside the same joystick with the lid removed to show the bare shaft and plate guides](output/previews/jlf_tp_8yt_preview.png)
 
-[Print-ready STL](output/bins/jlf_tp_8yt_3x3_7u_bin.stl) ·
-[STEP](output/bins/jlf_tp_8yt_3x3_7u_bin.step)
+| Part | Rim height | Bare shaft relative to rim | Files |
+|---|---:|---|---|
+| 3×3×8U bin | 52.55 mm | 3.15 mm above | [STL](output/bins/jlf_tp_8yt_3x3_8u_bin.stl) · [STEP](output/bins/jlf_tp_8yt_3x3_8u_bin.step) |
+| 3×3×9U bin | 59.55 mm | 3.85 mm below | [STL](output/bins/jlf_tp_8yt_3x3_9u_bin.stl) · [STEP](output/bins/jlf_tp_8yt_3x3_9u_bin.step) |
+| 9U shaft-bay lid for two OBSF-30 buttons | — | 1.85 mm clearance under lid | [STL](output/lids/jlf_tp_8yt_3x3_9u_shaft_bay_lid.stl) · [STEP](output/lids/jlf_tp_8yt_3x3_9u_shaft_bay_lid.step) |
 
-The **3×3×7U bin** has a 125.5 × 125.5 mm footprint and a 45.55 mm rim.
-The shaft lies horizontally with the LB-35 attached. Two printed-in guides
-capture the ends of the **95 × 54 mm mounting plate** in 2.3 mm slots with
-tapered entries. The top edge of the seated plate projects about 32 mm above
-the rim for gripping.
+Both bins have a 125.5 × 125.5 mm footprint. Unplug the harness, turn the
+5-pin connector upward and lower the 95 × 54 mm plate into the tapered
+2.3 mm slots. The seats hold its lower edge 23.2 mm above the base, leaving
+**3 mm between the floor and the modeled PCB and restrictor**. Both open bins
+also clear the LB-35 when attached. Remove the ball top to use the 9U lid.
 
-Lower the joystick straight into the guides with the 5-pin connector facing
-up and the harness unplugged. The guide seats carry the joystick by the
-plate and provide 3 mm of floor clearance under the modeled PCB and
-restrictor envelope. Print feet down. Seating and removal were checked
-in CAD. The fit still needs a check with the physical joystick.
+The lid rests on the front and side rims. Each rear shoulder bears on
+about 63 mm² of the front ledge of its plate guide. A 2 mm deep locator
+fits between the front rim and the guides, with 0.35 mm of play in each
+direction from center. Seat the dust washer against the plate. With the
+parts centered, the lid's middle rear edge clears the washer by 7.2 mm
+and leaves the mounting plate and electronics accessible.
+
+The OBSF-30 centers sit 37 mm to either side of the shaft and 20 mm forward
+of the bin center. Each 30.5 mm bore has a 34.6 mm underside clip recess
+and a 2.4 mm snap panel. The bare terminal tips clear the floor by 21.85 mm.
+Hook a fingertip into the off-center recess at the rear edge to lift the
+loaded lid straight up, then lift the joystick by its plate. Both lift paths
+were checked in CAD. Printed fit and grip still need a physical check.
+
+Print the bin STLs feet down and the lid STL button face down. The 9U bin
+and lid STEP files share seated assembly coordinates.
 
 The bottom-view drawing shows a 75 mm body span and 31 mm from the shaft
 center to the side opposite the connector. The CAD check allows 81 mm across
@@ -163,7 +177,7 @@ python -m pip install -r requirements.txt
 # Mixed 3×3 bin and both L-shaped lids
 python arcade_bin.py
 
-# Sideways Sanwa JLF-TP-8YT joystick bin
+# Sideways Sanwa JLF-TP-8YT joystick bins (8U and 9U) and 9U lid
 python joystick_bin.py
 
 # 1×4 lid for five OBSF-24 buttons
@@ -192,8 +206,8 @@ python balltop_bin.py --source 1x4x7u.stl
 ```
 
 The generators check the solids and exported STL meshes. Geometry tests cover
-the bore layout, clip recesses, rim stops, print orientation, and the mixed
-bin's removal paths and terminal clearance.
+the bore layouts, clip recesses, rim stops, print orientation, and the removal
+paths and terminal clearance in the mixed and joystick bins.
 
 ```bash
 python -m pip install pytest

@@ -23,10 +23,12 @@ from balltop_bin import BALL_DIAMETER, seated_ball_center_z
 from button_bin import Parameters, button_reference, foot
 from button_lid import make_flush_snap_lid
 from joystick_bin import (
-    HANDLE_REACH, PLATE_LENGTH, PLATE_SEAT_Z, PLATE_THICKNESS, PLATE_WIDTH, PLATE_Y,
-    SHAFT_Z, centered_box,
+    BARE_SHAFT_REACH, BUTTON_POSITIONS, LID_BASE_Z, LID_FACE_Z, PLATE_FRONT_Y,
+    PLATE_LENGTH, PLATE_SEAT_Z, PLATE_THICKNESS, PLATE_WIDTH, PLATE_Y,
+    SHAFT_DIAMETER, SHAFT_Z, WASHER_DIAMETER, WASHER_THICKNESS, centered_box,
 )
 from joystick_bin import make_bin as make_joystick_bin
+from joystick_bin import make_lid as make_joystick_lid
 
 
 PREVIEW_BACKGROUND = "#f4f6f8"
@@ -116,8 +118,7 @@ def render_arcade_bin(path: Path) -> None:
 
 
 def render_joystick_bin(path: Path) -> None:
-    bin_body = make_joystick_bin()
-    plate_front = PLATE_Y + PLATE_THICKNESS / 2
+    bin_body = make_joystick_bin(9)
     plate_back = PLATE_Y - PLATE_THICKNESS / 2
     plate = centered_box(PLATE_LENGTH, PLATE_THICKNESS, PLATE_SEAT_Z,
                          PLATE_SEAT_Z + PLATE_WIDTH, y=PLATE_Y)
@@ -135,22 +136,26 @@ def render_joystick_bin(path: Path) -> None:
     pcb = cq.Workplane(obj=pcb).edges("|Y").fillet(4).val()
     gate = cq.Solid.makeCylinder(28, 10, cq.Vector(0, plate_back - 33, SHAFT_Z), shaft_axis)
     connector = centered_box(10, 8, SHAFT_Z + 34, SHAFT_Z + 41, x=-18, y=plate_back - 22)
-    washer = cq.Solid.makeCylinder(23, 2, cq.Vector(0, plate_front, SHAFT_Z), shaft_axis)
-    ball_y = plate_front + HANDLE_REACH - BALL_DIAMETER / 2
-    shaft = cq.Solid.makeCylinder(5.5, ball_y - plate_front,
-                                  cq.Vector(0, plate_front, SHAFT_Z), shaft_axis)
-    ball = cq.Solid.makeSphere(BALL_DIAMETER / 2, cq.Vector(0, ball_y, SHAFT_Z),
-                               angleDegrees1=-90, angleDegrees2=90)
+    shaft_start = cq.Vector(0, PLATE_FRONT_Y, SHAFT_Z)
+    washer = cq.Solid.makeCylinder(WASHER_DIAMETER / 2, WASHER_THICKNESS, shaft_start, shaft_axis)
+    shank_length = BARE_SHAFT_REACH - 8
+    shaft = cq.Solid.makeCylinder(SHAFT_DIAMETER / 2, shank_length, shaft_start, shaft_axis)
+    tip = cq.Solid.makeCylinder(3, 8, shaft_start + shaft_axis * shank_length, shaft_axis)
     hardware = (
         (plate, (202, 211, 218)), (housing.fuse(ears), (56, 63, 70)),
         (pcb, (198, 148, 72)), (gate, (79, 91, 102)), (connector, (219, 217, 202)),
-        (washer, (56, 63, 70)),
-        (shaft, (187, 195, 202)), (ball, (204, 77, 62)),
+        (washer, (56, 63, 70)), (shaft.fuse(tip), (187, 195, 202)),
     )
+    lid = make_joystick_lid().translate((0, 0, LID_BASE_Z))
+    p = Parameters()
+    button = button_reference(p)
+    buttons = tuple((button.translate((x, y, LID_FACE_Z - p.seat_z)), (227, 150, 77))
+                    for _, x, y in BUTTON_POSITIONS)
 
     fig, axes = plt.subplots(1, 2, figsize=(10, 4.9), facecolor=PREVIEW_BACKGROUND)
-    for ax, (label, elevation, parts) in zip(axes, (("Joystick seated", 45, hardware),
-                                                   ("Integrated plate guides", 58, ()))):
+    views = (("9U · Two-button lid seated", 54, (*hardware, (lid, (96, 128, 182)), *buttons)),
+             ("9U · Lid removed", 58, hardware))
+    for ax, (label, elevation, parts) in zip(axes, views):
         ax.imshow(rasterize(bin_body, (640, 550), azimuth=60, elevation=elevation,
                             overlays=parts))
         ax.set_title(label, fontsize=15, color="#172c3d", pad=10)
