@@ -12,7 +12,7 @@ from balltop_bin import (
 from button_bin import Parameters, cylinder, export_pair, foot, rounded_prism
 from button_lid import (
     FLUSH_LID_THICKNESS, GRID_PITCH, LID_WIDTH, LIFT_TAB_EXTENSION, RIM_STOP_CORNER_RADIUS,
-    RIM_STOP_HEIGHT, SNAP_BUTTONS, cut_snap_openings, make_rim_stop,
+    RIM_STOP_HEIGHT, SNAP_BUTTONS, cut_snap_openings, lift_tab_suffix, make_rim_stop,
 )
 from validate_models import validate_export
 
@@ -80,19 +80,21 @@ def make_bin() -> cq.Shape:
     return body.cut(shared_cavity, ball_cavity, low_wall_cut).fuse(seat).clean()
 
 
-def make_lid() -> cq.Shape:
+def make_lid(*, lift_tab: bool = False) -> cq.Shape:
     """Return the lid with its locator at Z=0 and its button face pointing up."""
     stop = button_section(0, DIVIDER_BALL_EDGE, LOCATOR_DEPTH, FLUSH_LID_THICKNESS)
-    # Overlap the narrow +Y end so the tab's rounded corners blend into the rim.
-    half = FOOTPRINT / 2
-    tab_width = half + DIVIDER_BALL_EDGE
-    tab_length = LIFT_TAB_EXTENSION + 2 * RIM_STOP_CORNER_RADIUS
-    tab = make_rim_stop(tab_width, tab_length, LOCATOR_DEPTH).translate(
-        (half - tab_width / 2, half + LIFT_TAB_EXTENSION - tab_length / 2, 0)
-    )
+    if lift_tab:
+        # Overlap the narrow +Y end so the tab's rounded corners blend into the rim.
+        half = FOOTPRINT / 2
+        tab_width = half + DIVIDER_BALL_EDGE
+        tab_length = LIFT_TAB_EXTENSION + 2 * RIM_STOP_CORNER_RADIUS
+        tab = make_rim_stop(tab_width, tab_length, LOCATOR_DEPTH).translate(
+            (half - tab_width / 2, half + LIFT_TAB_EXTENSION - tab_length / 2, 0)
+        )
+        stop = stop.fuse(tab)
     locator = button_section(WALL_THICKNESS + LOCATOR_CLEARANCE,
                              DIVIDER_BUTTON_EDGE - LOCATOR_CLEARANCE, 0, LOCATOR_DEPTH)
-    return cut_snap_openings(stop.fuse(tab, locator), button_positions())
+    return cut_snap_openings(stop.fuse(locator), button_positions())
 
 
 def check_fit(bin_body: cq.Shape, seated_lid: cq.Shape) -> dict[str, float]:
@@ -127,24 +129,32 @@ def check_fit(bin_body: cq.Shape, seated_lid: cq.Shape) -> dict[str, float]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", type=Path, default=Path("output"))
+    parser.add_argument("--output", type=Path, default=Path("output"),
+                        help="Root directory for the bins and lids export folders.")
     args = parser.parse_args()
 
     bin_body = make_bin()
-    lid = make_lid()
-    seated_lid = lid.translate((0, 0, LOCATOR_BOTTOM_Z))
-    clearance = check_fit(bin_body, seated_lid)
-    lid_for_print = lid.rotate((0, 0, 0), (1, 0, 0), 180).translate((0, 0, FLUSH_LID_THICKNESS))
-    args.output.mkdir(parents=True, exist_ok=True)
-    bin_path = args.output / "arcade_3x3_5u_7u_bin"
-    lid_path = args.output / "arcade_3x3_rim_stop_snap_lid"
+    bin_path = args.output / "bins" / "arcade_3x3_5u_7u_bin"
+    bin_path.parent.mkdir(parents=True, exist_ok=True)
     export_pair(bin_body, bin_path)
-    export_pair(seated_lid, lid_path, stl_shape=lid_for_print)
-    for shape, path in ((bin_body, bin_path), (seated_lid, lid_path)):
-        validate_export(shape, path)
-        print(f"{path}: watertight STL and valid STEP solid")
-    for button, gap in clearance.items():
-        print(f"{button.upper()}: {gap:.2f} mm below the bare terminal tips")
+    validate_export(bin_body, bin_path)
+    print(f"{bin_path}: watertight STL and valid STEP solid")
+
+    lid_dir = args.output / "lids"
+    lid_dir.mkdir(parents=True, exist_ok=True)
+    for lift_tab in (False, True):
+        lid = make_lid(lift_tab=lift_tab)
+        seated_lid = lid.translate((0, 0, LOCATOR_BOTTOM_Z))
+        clearance = check_fit(bin_body, seated_lid)
+        lid_for_print = lid.rotate((0, 0, 0), (1, 0, 0), 180).translate(
+            (0, 0, FLUSH_LID_THICKNESS)
+        )
+        lid_path = lid_dir / f"arcade_3x3_rim_stop_snap_lid{lift_tab_suffix(lift_tab)}"
+        export_pair(seated_lid, lid_path, stl_shape=lid_for_print)
+        validate_export(seated_lid, lid_path)
+        print(f"{lid_path}: watertight STL and valid STEP solid")
+        for button, gap in clearance.items():
+            print(f"{button.upper()}: {gap:.2f} mm below the bare terminal tips")
 
 
 if __name__ == "__main__":

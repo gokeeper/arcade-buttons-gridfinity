@@ -137,7 +137,7 @@ def make_balltop_bin(source: cq.Shape) -> cq.Shape:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", type=Path, default=Path("1x4x7u.stl"))
-    parser.add_argument("--output", type=Path, default=Path("output"))
+    parser.add_argument("--output", type=Path, default=Path("output/bins"))
     args = parser.parse_args()
 
     body = make_balltop_bin(load_source(args.source))

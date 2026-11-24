@@ -138,7 +138,7 @@ def test_flush_snap_lid_has_single_bore_and_recess():
 
 @pytest.mark.parametrize("layout, button, rim_stop, width, length, xs, ys, opening, recess", [
     ("2x4", None, False, 79, 163, (-21, 21), (-63, -21, 21, 63), 30.5, 34.6),
-    ("2x4", None, True, 83.5, 175.5, (-21, 21), (-63, -21, 21, 63), 30.5, 34.6),
+    ("2x4", None, True, 83.5, 167.5, (-21, 21), (-63, -21, 21, 63), 30.5, 34.6),
     ("1x4", None, True, 41.5, 167.5, (0,), (-64, -32, 0, 32, 64), 24.3, 28.6),
     ("1x4", "obsf30", True, 41.5, 167.5, (0,), (-63, -21, 21, 63), 30.5, 34.6),
 ])
@@ -168,20 +168,25 @@ def test_multi_button_snap_lid_places_buttons_at_expected_centers(
             assert lid.isInside(cq.Vector(x, y, 2.01))
 
 
-@pytest.mark.parametrize("button", ["obsf24", "obsf30"])
-def test_1x4_lift_tab_only_extends_one_rim_end(button):
-    original = make_flush_snap_lid("1x4", rim_stop=True, button=button)
-    lid = make_flush_snap_lid("1x4", rim_stop=True, button=button, lift_tab=True)
+@pytest.mark.parametrize("layout, button, width", [
+    ("1x4", "obsf24", 41.5),
+    ("1x4", "obsf30", 41.5),
+    ("2x4", "obsf30", 83.5),
+])
+def test_lift_tab_only_extends_one_rim_end(layout, button, width):
+    original = make_flush_snap_lid(layout, rim_stop=True, button=button)
+    lid = make_flush_snap_lid(layout, rim_stop=True, button=button, lift_tab=True)
     bounds = lid.BoundingBox()
     assert (bounds.xlen, bounds.ymin, bounds.ymax, bounds.zlen) == pytest.approx(
-        (41.5, -83.75, 91.75, 3.2)
+        (width, -83.75, 91.75, 3.2)
     )
     assert original.cut(lid).Volume() < 1e-6
     extension = lid.cut(original)
     assert extension.BoundingBox().zmin == pytest.approx(2.0)
-    assert extension.Volume() == pytest.approx(41.5 * 8 * 1.2)
-    assert lid.isInside(cq.Vector(20, 87, 2.6))
-    assert lid.isInside(cq.Vector(-20, 87, 2.6))
+    assert extension.Volume() == pytest.approx(width * 8 * 1.2)
+    x_edge = width / 2 - 0.75
+    assert lid.isInside(cq.Vector(x_edge, 87, 2.6))
+    assert lid.isInside(cq.Vector(-x_edge, 87, 2.6))
 
 
 @pytest.mark.parametrize("args, name, width, length, corner_radius, count, opening", [
@@ -191,15 +196,19 @@ def test_1x4_lift_tab_only_extends_one_rim_end(button):
     ),
     (
         ["--rim-stop-snap"],
-        "obsf30_2x4_rim_stop_snap_lid_30p5_mw47599", 83.5, 175.5, 3.75, 8, 30.5,
+        "obsf30_2x4_rim_stop_snap_lid_30p5_mw47599_no_tab", 83.5, 167.5, 3.75, 8, 30.5,
+    ),
+    (
+        ["--rim-stop-snap", "2x4", "--lift-tab"],
+        "obsf30_2x4_rim_stop_snap_lid_30p5_mw47599_lift_tab_8mm", 83.5, 175.5, 3.75, 8, 30.5,
     ),
     (
         ["--rim-stop-snap", "1x4"],
-        "obsf24_1x4_rim_stop_snap_lid_24p3_mw47599", 41.5, 167.5, 3.75, 5, 24.3,
+        "obsf24_1x4_rim_stop_snap_lid_24p3_mw47599_no_tab", 41.5, 167.5, 3.75, 5, 24.3,
     ),
     (
         ["--rim-stop-snap", "1x4", "--button", "obsf30"],
-        "obsf30_1x4_rim_stop_snap_lid_30p5_mw47599", 41.5, 167.5, 3.75, 4, 30.5,
+        "obsf30_1x4_rim_stop_snap_lid_30p5_mw47599_no_tab", 41.5, 167.5, 3.75, 4, 30.5,
     ),
     (
         ["--rim-stop-snap", "1x4", "--lift-tab"],

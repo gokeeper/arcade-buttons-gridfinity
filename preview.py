@@ -92,7 +92,7 @@ def rasterize(
 
 def render_arcade_bin(path: Path) -> None:
     bin_body = make_arcade_bin()
-    lid = make_arcade_lid().translate((0, 0, LOCATOR_BOTTOM_Z))
+    lid = make_arcade_lid(lift_tab=True).translate((0, 0, LOCATOR_BOTTOM_Z))
     radius = BALL_DIAMETER / 2
     ball_center = cq.Vector(*cell_center(1, 1), seated_ball_center_z(FLOOR_Z, radius))
     ball = cq.Solid.makeSphere(radius, ball_center, angleDegrees1=-90, angleDegrees2=90)
@@ -118,7 +118,7 @@ def render_overview(path: Path) -> None:
         ("1×4 lid", "4 × OBSF-30  ·  42 mm pitch",
          make_flush_snap_lid("1x4", rim_stop=True, button="obsf30"), lid_color),
         ("2×4 lid", "8 × OBSF-30  ·  42 mm pitch",
-         make_flush_snap_lid("2x4", rim_stop=True), lid_color),
+         make_flush_snap_lid("2x4", rim_stop=True, lift_tab=True), lid_color),
     )
     fig, axes = plt.subplots(1, 3, figsize=(12.8, 3.9), facecolor=PREVIEW_BACKGROUND)
     fig.text(0.05, 0.90, "Rim-stop lids",
@@ -305,7 +305,7 @@ def render_dimension_drawing(p: Parameters, path: Path) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Render the README model previews.")
-    parser.add_argument("--output", type=Path, default=Path("output"))
+    parser.add_argument("--output", type=Path, default=Path("output/previews"))
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     render_overview(args.output / "preview.png")

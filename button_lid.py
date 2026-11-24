@@ -83,13 +83,17 @@ def make_rim_stop(width: float, length: float, bottom: float) -> cq.Shape:
             .extrude(RIM_STOP_HEIGHT).edges("|Z").fillet(RIM_STOP_CORNER_RADIUS).val())
 
 
+def lift_tab_suffix(lift_tab: bool) -> str:
+    return f"_lift_tab_{LIFT_TAB_EXTENSION:g}mm" if lift_tab else "_no_tab"
+
+
 def make_flush_snap_lid(
     layout: str = "1x1", *, rim_stop: bool = False, button: str | None = None,
     lift_tab: bool = False,
 ) -> cq.Shape:
     """Build a snap-in lid for the selected bin footprint."""
-    if lift_tab and (layout != "1x4" or not rim_stop):
-        raise ValueError("The lift tab requires a 1x4 rim-stop lid.")
+    if lift_tab and (layout not in ("1x4", "2x4") or not rim_stop):
+        raise ValueError("The lift tab requires a 1x4 or 2x4 rim-stop lid.")
     columns, rows, default_button = SNAP_LAYOUTS[layout]
     button = button or default_button
     width = FLUSH_LID_WIDTH + (columns - 1) * GRID_PITCH
@@ -100,7 +104,7 @@ def make_flush_snap_lid(
     if rim_stop:
         extra_width = LID_WIDTH - FLUSH_LID_WIDTH
         # Extend the flange at +Y while keeping the locator centered in the bin.
-        tab = LIFT_TAB_EXTENSION if lift_tab or layout == "2x4" else 0
+        tab = LIFT_TAB_EXTENSION if lift_tab else 0
         flange = make_rim_stop(width + extra_width, length + extra_width + tab,
                                locator_height).translate((0, tab / 2, 0))
         lid = lid.fuse(flange)
@@ -150,12 +154,12 @@ def main() -> None:
     )
     snap_design.add_argument(
         "--rim-stop-snap", nargs="?", const="2x4", choices=("2x4", "1x4"),
-        help="Export a rim-stop lid for MakerWorld 47599 (default: 2x4 with lift tab).",
+        help="Export a rim-stop lid for MakerWorld 47599 (default: 2x4).",
     )
     parser.add_argument("--button", choices=SNAP_BUTTONS,
                         help="Button model for --rim-stop-snap 1x4 (default: obsf24).")
     parser.add_argument("--lift-tab", action="store_true",
-                        help="Add an 8 mm end tab to a 1x4 rim-stop lid.")
+                        help="Add an 8 mm end tab to a rim-stop lid.")
     parser.add_argument("--opening", type=float, choices=(30.2, 30.6), action="append",
                         help="Body opening in mm. Omit to export both sizes.")
     parser.add_argument("--rim-profile", choices=RIM_PROFILES)
@@ -164,12 +168,12 @@ def main() -> None:
     parser.add_argument("--rim-corner-radius", type=float)
     parser.add_argument("--clearance", type=float,
                         help="Locator clearance per side in mm (default: 0.4).")
-    parser.add_argument("--output", type=Path, default=Path("output"))
+    parser.add_argument("--output", type=Path, default=Path("output/lids"))
     args = parser.parse_args()
     if args.button is not None and args.rim_stop_snap != "1x4":
         parser.error("--button requires --rim-stop-snap 1x4.")
-    if args.lift_tab and args.rim_stop_snap != "1x4":
-        parser.error("--lift-tab requires --rim-stop-snap 1x4.")
+    if args.lift_tab and not args.rim_stop_snap:
+        parser.error("--lift-tab requires --rim-stop-snap.")
     if args.flush_snap or args.rim_stop_snap:
         if any(option is not None for option in (
             args.opening, args.rim_profile, args.rim_opening, args.lower_opening,
@@ -183,8 +187,8 @@ def main() -> None:
         variant = "rim_stop" if args.rim_stop_snap else "flush"
         opening_label = f"{opening:.1f}".replace(".", "p")
         name = f"{button}_{layout}_{variant}_snap_lid_{opening_label}_mw47599"
-        if args.lift_tab:
-            name += f"_lift_tab_{LIFT_TAB_EXTENSION:g}mm"
+        if args.rim_stop_snap:
+            name += lift_tab_suffix(args.lift_tab)
         lid = make_flush_snap_lid(
             layout, rim_stop=bool(args.rim_stop_snap), button=button, lift_tab=args.lift_tab,
         )
