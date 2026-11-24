@@ -62,16 +62,16 @@ def centered_box(width: float, depth: float, bottom: float, top: float,
 
 
 def add_plate_guides(base: cq.Shape, *, outer_x: float, floor_z: float,
-                     seat_z: float, top_z: float) -> cq.Shape:
+                     seat_z: float, top_z: float, slot_depth: float = SLOT_DEPTH) -> cq.Shape:
     """Join both guides to the floor and cut their common slot and tapered entry."""
     guide_width = outer_x - GUIDE_INNER_X
     guide_center = (outer_x + GUIDE_INNER_X) / 2
     guides = [centered_box(guide_width, GUIDE_DEPTH, floor_z - 0.5, top_z,
                            x=sign * guide_center, y=PLATE_Y) for sign in (-1, 1)]
-    slot = centered_box(SLOT_LENGTH, SLOT_DEPTH, seat_z, top_z + 1, y=PLATE_Y)
+    slot = centered_box(SLOT_LENGTH, slot_depth, seat_z, top_z + 1, y=PLATE_Y)
     lead_in = cq.Solid.makeLoft([
         cq.Workplane("XY", origin=(0, PLATE_Y, z)).rect(
-            SLOT_LENGTH + flare, SLOT_DEPTH + flare
+            SLOT_LENGTH + flare, slot_depth + flare
         ).val()
         for z, flare in ((top_z - LEAD_IN, 0), (top_z, 2 * LEAD_IN))
     ], ruled=True)

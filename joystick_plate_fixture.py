@@ -13,18 +13,20 @@ from validate_models import validate_export
 
 def make_fixture() -> cq.Shape:
     floor_z = 2.0
-    seat_z = floor_z + 8.0
+    seat_z = floor_z + 7.0
+    slot_depth = 1.9  # 0.3 mm of total clearance for the 1.6 mm plate.
     outer_x = SLOT_LENGTH / 2 + LEAD_IN + 4.0
     crossbar = centered_box(2 * outer_x, GUIDE_DEPTH, 0, floor_z, y=PLATE_Y)
     pad_depth = 39.0
     pcb_pad = centered_box(83, pad_depth, 0, floor_z, y=PLATE_Y - pad_depth / 2)
     return add_plate_guides(crossbar.fuse(pcb_pad), outer_x=outer_x,
-                            floor_z=floor_z, seat_z=seat_z, top_z=seat_z + 12)
+                            floor_z=floor_z, seat_z=seat_z, top_z=seat_z + 12,
+                            slot_depth=slot_depth)
 
 
 if __name__ == "__main__":
     fixture = make_fixture()
-    path = Path("output/test_fixtures/jlf_tp_8yt_plate_seat_8mm")
+    path = Path("output/test_fixtures/jlf_tp_8yt_plate_seat_7mm")
     path.parent.mkdir(parents=True, exist_ok=True)
     export_pair(fixture, path)
     report = validate_export(fixture, path)

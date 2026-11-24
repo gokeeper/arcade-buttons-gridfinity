@@ -48,17 +48,19 @@ def test_fixture_plate_seats_and_pcb_floor():
     fixture = make_fixture()
     bounds = fixture.BoundingBox()
     assert (bounds.xlen, bounds.ylen, bounds.zmin, bounds.zmax) == pytest.approx(
-        (106.8, 45, 0, 22), abs=1e-6
+        (106.8, 45, 0, 21), abs=1e-6
     )
     # The 95 × 54 × 1.6 mm plate can descend at either extreme of its slot play.
-    path = centered_box(96.4, 2.3, 10, 22 + 54, y=PLATE_Y)
+    path = centered_box(96.4, 1.9, 9, 21 + 54, y=PLATE_Y)
     assert fixture.intersect(path).Volume() < 1e-6
     for x in (-45, 45):
-        contact = centered_box(3, 1.6, 9.9, 10, x=x, y=PLATE_Y)
+        contact = centered_box(3, 1.6, 8.9, 9, x=x, y=PLATE_Y)
         assert contact.cut(fixture).Volume() < 1e-6
+        for side in (-1, 1):
+            wall = centered_box(3, 0.1, 9, 19.8, x=x, y=PLATE_Y + side * 1.0)
+            assert wall.cut(fixture).Volume() < 1e-6
 
     pad = centered_box(83, 39, 1.9, 2, y=PLATE_Y - 19.5)
     assert pad.cut(fixture).Volume() < 1e-6
-    # A flat gauge covers the electronics footprint at the 8 mm seat offset.
-    above_pad = centered_box(83, 39, 2, 10, y=PLATE_Y - 19.5)
+    above_pad = centered_box(83, 39, 2, 9, y=PLATE_Y - 19.5)
     assert fixture.intersect(above_pad).Volume() < 1e-6
