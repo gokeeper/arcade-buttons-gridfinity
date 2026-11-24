@@ -1,7 +1,7 @@
 # Arcade Buttons × Gridfinity
 
 Gridfinity storage for Sanwa OBSF-24 and OBSF-30 arcade buttons and
-35 mm joystick ball tops. The [mixed 3×3 bin](#mixed-33-arcade-bin)
+35 mm LB-35 joystick ball tops. The [mixed 3×3 bin](#mixed-33-arcade-bin)
 holds eight buttons and one ball top. All four lid layouts come with and
 without an 8 mm lift tab. The [5U ball-top bin](#joystick-ball-top-bin)
 holds four balls in separate compartments.
@@ -17,7 +17,7 @@ rims are 31.55 mm and 45.55 mm above the base, respectively.
 
 | Row \ Column | 1 | 2 | 3 |
 |---|---|---|---|
-| 1 | 35 mm ball top | OBSF-24 | OBSF-24 |
+| 1 | LB-35 ball top (35 mm) | OBSF-24 | OBSF-24 |
 | 2 | OBSF-30 | OBSF-30 | OBSF-30 |
 | 3 | OBSF-30 | OBSF-30 | OBSF-30 |
 
@@ -33,7 +33,7 @@ the locator reaches 2 mm into the cavity, and the clips engage across
 the two OBSF-24 buttons. The STEP models share coordinates with the lid seated.
 
 The ball sits on a 3 mm high centering ring with an 18 mm bore, a 23 mm
-outside diameter, and a rounded contact edge. About 11 mm of a 35 mm ball
+outside diameter, and a rounded contact edge. About 11 mm of the seated LB-35
 projects above the low rim, with access from both outside edges.
 
 CAD checks confirmed straight lift paths for the lid and ball, with
@@ -104,8 +104,8 @@ Printed rim fit, clip engagement, and grip comfort still need a physical check.
 
 ## Joystick ball-top bin
 
-The **1×4×5U bin** has three 1.8 mm dividers, paired finger scoops, and
-the same rounded centering ring in each of its four compartments.
+The **1×4×5U bin** holds four LB-35 ball tops. It has three 1.8 mm dividers,
+paired finger scoops, and a rounded centering ring in each compartment.
 About 11 mm of each seated ball sits above the rim so you can pinch it
 from the sides. Print upright with the Gridfinity feet on the bed.
 [Print-ready STL](output/bins/balltop_1x4_5u_35mm.stl) ·
