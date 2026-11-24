@@ -61,6 +61,23 @@ def centered_box(width: float, depth: float, bottom: float, top: float,
                             cq.Vector(x - width / 2, y - depth / 2, bottom))
 
 
+def add_plate_guides(base: cq.Shape, *, outer_x: float, floor_z: float,
+                     seat_z: float, top_z: float) -> cq.Shape:
+    """Join both guides to the floor and cut their common slot and tapered entry."""
+    guide_width = outer_x - GUIDE_INNER_X
+    guide_center = (outer_x + GUIDE_INNER_X) / 2
+    guides = [centered_box(guide_width, GUIDE_DEPTH, floor_z - 0.5, top_z,
+                           x=sign * guide_center, y=PLATE_Y) for sign in (-1, 1)]
+    slot = centered_box(SLOT_LENGTH, SLOT_DEPTH, seat_z, top_z + 1, y=PLATE_Y)
+    lead_in = cq.Solid.makeLoft([
+        cq.Workplane("XY", origin=(0, PLATE_Y, z)).rect(
+            SLOT_LENGTH + flare, SLOT_DEPTH + flare
+        ).val()
+        for z, flare in ((top_z - LEAD_IN, 0), (top_z, 2 * LEAD_IN))
+    ], ruled=True)
+    return base.fuse(*guides).cut(slot.fuse(lead_in)).clean()
+
+
 def make_bin(height_u: int = 9) -> cq.Shape:
     if height_u not in RIM_Z:
         raise ValueError("The JLF bin comes in 8U and 9U.")
@@ -69,21 +86,8 @@ def make_bin(height_u: int = 9) -> cq.Shape:
                            RIM_STOP_CORNER_RADIUS - WALL_THICKNESS,
                            FLOOR_Z, rim_z + 1)
     tray = make_3x3_blank(rim_z).cut(cavity)
-
-    # The guides join the floor and sidewalls, leaving the electronics bay open.
-    guide_outer_x = FOOTPRINT / 2 - WALL_THICKNESS / 2
-    guide_width = guide_outer_x - GUIDE_INNER_X
-    guide_center = (guide_outer_x + GUIDE_INNER_X) / 2
-    guides = [centered_box(guide_width, GUIDE_DEPTH, FLOOR_Z - 0.5, rim_z,
-                           x=sign * guide_center, y=PLATE_Y) for sign in (-1, 1)]
-    slot = centered_box(SLOT_LENGTH, SLOT_DEPTH, PLATE_SEAT_Z, rim_z + 1, y=PLATE_Y)
-    lead_in = cq.Solid.makeLoft([
-        cq.Workplane("XY", origin=(0, PLATE_Y, z)).rect(
-            SLOT_LENGTH + flare, SLOT_DEPTH + flare
-        ).val()
-        for z, flare in ((rim_z - LEAD_IN, 0), (rim_z, 2 * LEAD_IN))
-    ], ruled=True)
-    return tray.fuse(*guides).cut(slot.fuse(lead_in)).clean()
+    return add_plate_guides(tray, outer_x=FOOTPRINT / 2 - WALL_THICKNESS / 2,
+                            floor_z=FLOOR_Z, seat_z=PLATE_SEAT_Z, top_z=rim_z)
 
 
 def lid_section(inset: float, shoulder_y: float, bottom: float, top: float) -> cq.Shape:

@@ -4,8 +4,9 @@ import pytest
 
 from arcade_bin import FLOOR_Z
 from joystick_bin import (
-    LID_BASE_Z, check_fit, check_lid_fit, joystick_gauges, make_bin, make_lid,
+    LID_BASE_Z, PLATE_Y, centered_box, check_fit, check_lid_fit, joystick_gauges, make_bin, make_lid,
 )
+from joystick_plate_fixture import make_fixture
 
 
 @pytest.fixture(scope="module", params=[8, 9])
@@ -41,3 +42,23 @@ def test_9u_lid_seats_and_lifts_with_two_snap_buttons():
     shoulders = [face for face in lid.Faces() if face.geomType() == "PLANE"
                  and face.Center().z == pytest.approx(60.75 - 2.4)]
     assert len(shoulders) == 2
+
+
+def test_fixture_plate_seats_and_pcb_floor():
+    fixture = make_fixture()
+    bounds = fixture.BoundingBox()
+    assert (bounds.xlen, bounds.ylen, bounds.zmin, bounds.zmax) == pytest.approx(
+        (106.8, 45, 0, 22), abs=1e-6
+    )
+    # The 95 × 54 × 1.6 mm plate can descend at either extreme of its slot play.
+    path = centered_box(96.4, 2.3, 10, 22 + 54, y=PLATE_Y)
+    assert fixture.intersect(path).Volume() < 1e-6
+    for x in (-45, 45):
+        contact = centered_box(3, 1.6, 9.9, 10, x=x, y=PLATE_Y)
+        assert contact.cut(fixture).Volume() < 1e-6
+
+    pad = centered_box(83, 39, 1.9, 2, y=PLATE_Y - 19.5)
+    assert pad.cut(fixture).Volume() < 1e-6
+    # A flat gauge covers the electronics footprint at the 8 mm seat offset.
+    above_pad = centered_box(83, 39, 2, 10, y=PLATE_Y - 19.5)
+    assert fixture.intersect(above_pad).Volume() < 1e-6
