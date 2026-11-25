@@ -3,24 +3,26 @@
 Gridfinity storage for Sanwa OBSF-24 and OBSF-30 arcade buttons, JLF-TP-8YT
 joysticks, and 35 mm LB-35 ball tops.
 
-- [Mixed 3×3 arcade bin](#mixed-33-arcade-bin) holds eight buttons and one
-  ball top. The lid comes with or without an 8 mm lift tab.
-- [7U and 8U joystick bins](#sanwa-jlf-tp-8yt-joystick-bin) hold the joystick
-  sideways. The 8U has a two-button lid over the shaft.
-- [4U ball-top bin](#joystick-ball-top-bin) holds four ball tops in separate
-  compartments.
+- [Button and Balltop set bin](#button-and-balltop-set-bin) holds six 30 mm
+  OBSF-30 buttons, two 24 mm OBSF-24 buttons, and one ball top. The lid comes
+  with or without an 8 mm lift tab.
+- [Joystick bin](#joystick-bin) holds the JLF-TP-8YT sideways and comes in
+  7U and 8U. The 8U has a two-button lid over the shaft.
+- [Balltop bin](#balltop-bin) holds four ball tops in separate compartments.
 - [Drop-in lids for existing bins](#drop-in-lids-for-existing-bins) fit 1×4
   and 2×4 bins and come with or without an 8 mm lift tab.
 
-## Mixed 3×3 arcade bin
+## Button and Balltop set bin
 
 ![CAD views of the 4U–5U bin with the lift-tab lid and ball in place, and with the lid removed to show the dividers and centering ring](output/previews/arcade_3x3_preview.png)
 
-The 125.5 × 125.5 mm bin uses a 42 mm pitch and nine Gridfinity feet.
+The 3×3 bin holds six 30 mm OBSF-30 buttons, two 24 mm OBSF-24 buttons, and
+one 35 mm LB-35 ball top. It measures 125.5 × 125.5 mm and uses a 42 mm pitch
+and nine Gridfinity feet.
 Two dividers separate the 4U ball-top corner from the shared 5U button cavity
-and support the inside corner of the removable L-shaped lid. The mixed bin
-name counts full 7 mm units from the bottom of the feet to each rim. The
-ball-top rim is 31.55 mm high and the button rim is 38.55 mm high.
+and support the inside corner of the removable L-shaped lid. The export
+filename counts full 7 mm units from the bottom of the feet to each rim.
+The ball-top rim is 31.55 mm high and the button rim is 38.55 mm high.
 
 | Row \ Column | 1 | 2 | 3 |
 |---|---|---|---|
@@ -48,7 +50,7 @@ tips clear the floor by 1.55 mm for the OBSF-24 and 1.85 mm for the OBSF-30.
 Check that the loaded lid seats fully on the first print, especially with the
 OBSF-24 buttons installed.
 
-## Sanwa JLF-TP-8YT joystick bin
+## Joystick bin
 
 ![8U bin with the two OBSF-30 buttons installed in the shaft-bay lid, alongside the same joystick with the lid removed to show the bare shaft and plate guides](output/previews/jlf_tp_8yt_preview.png)
 
@@ -58,8 +60,9 @@ OBSF-24 buttons installed.
 | 3×3×8U bin | 59.55 mm | 12.85 mm below rim | [STL](output/bins/jlf_tp_8yt_3x3_8u_bin.stl) · [STEP](output/bins/jlf_tp_8yt_3x3_8u_bin.step) |
 | 8U shaft-bay lid for two OBSF-30 buttons | — | 10.85 mm below lid underside | [STL](output/lids/jlf_tp_8yt_3x3_8u_shaft_bay_lid.stl) · [STEP](output/lids/jlf_tp_8yt_3x3_8u_shaft_bay_lid.step) |
 
-Both bins have a 125.5 × 125.5 mm footprint. Unplug the harness, turn the
-5-pin connector upward and lower the 95 × 54 mm plate into the tapered
+Both bins hold a Sanwa JLF-TP-8YT joystick and have a 125.5 × 125.5 mm
+footprint. Unplug the harness, turn the 5-pin connector upward, and lower
+the 95 × 54 mm plate into the tapered
 1.9 mm slots. The seats put the lower plate edge **7 mm above the floor**
 and 14.2 mm above the bin base. These dimensions come from the printed
 test fixture, where both the PCB and restrictor cleared the floor.
@@ -97,7 +100,7 @@ restrictor projection below the lower plate edge. That envelope leaves
 [Underside photo](https://www.arcadexpress.com/35-medium_default/sanwa-jlf-tp-8yt-arcade-joystick.jpg) ·
 [Sanwa JLF catalog, pp. 4–5](https://rs2006.co.jp/e/sanwaseimitsu/Sanwa2020.pdf#page=3)
 
-## Joystick ball-top bin
+## Balltop bin
 
 ![CAD views of the 1×4 ball-top bin with four LB-35 balls seated and with the compartments empty, showing the finger scoops and centering rings](output/previews/balltop_1x4_preview.png)
 
@@ -173,8 +176,8 @@ your bin before seating the loaded lid.
    loaded lid on the bin rim.
 3. To remove a button, lift the whole lid, squeeze the clips from underneath,
    and push the button out.
-4. On the mixed 3×3 bin, leave the button lid seated and grasp the loose
-   ball top from the two low outside edges to lift it straight up.
+4. On the Button and Balltop set bin, leave the button lid seated and grasp
+   the loose ball top from the two low outside edges to lift it straight up.
 
 Printed rim fit, clip engagement, and grip comfort still need a physical check.
 
@@ -190,17 +193,17 @@ python -m pip install -r requirements.txt
 ```
 
 ```bash
-# Mixed 3×3 4U–5U bin and both L-shaped lids
+# Button and Balltop set bin (3×3 4U–5U) and both L-shaped lids
 python arcade_bin.py
 
-# Sideways Sanwa JLF-TP-8YT joystick bins (7U and 8U) and 8U lid
+# Joystick bin (7U and 8U) and 8U lid
 python joystick_bin.py
 
 # JLF plate-seat fixture with production slot width and seat height
 python joystick_plate_fixture.py
 ```
 
-To rebuild the ball-top bin, use the 1×4×7U mesh from the original bin
+To rebuild the Balltop bin, use the 1×4×7U mesh from the original bin
 collection as input to the [ball-top generator](balltop_bin.py).
 
 ```bash
@@ -228,7 +231,7 @@ python preview.py
 
 The generators check the solids and exported STL meshes. Geometry tests cover
 the bore layouts, clip recesses, rim stops, print orientation, and the removal
-paths and terminal clearance in the mixed and joystick bins.
+paths and terminal clearance in the Button and Balltop set bin and Joystick bin.
 
 ```bash
 python -m pip install pytest
