@@ -1,4 +1,4 @@
-# Arcade Buttons × Gridfinity
+# Sanwa Buttons Joystick Storage x Gridfinity
 
 Gridfinity storage for Sanwa OBSF-24 and OBSF-30 arcade buttons and
 35 mm LB-35 joystick ball tops. The [mixed 3×3 bin](#mixed-33-arcade-bin)
@@ -113,7 +113,7 @@ A 36 mm gauge cleared the straight removal path in all four positions in CAD.
 
 ## Drop-in lids for existing bins
 
-![Rim-stop lids for five OBSF-24 buttons on a 1×4 bin, four OBSF-30 buttons on a 1×4 bin, and eight OBSF-30 buttons on a 2×4 bin with a lift tab](output/previews/preview.png)
+![Rim-stop lids for five OBSF-24 buttons on a 1×4 bin, four OBSF-30 buttons on a 1×4 bin, and eight OBSF-30 buttons on a 2×4 bin with a lift tab](output/previews/drop_in_lids_preview.png)
 
 | Bin footprint | Buttons | Center spacing | Without tab | With 8 mm lift tab |
 |---|---|---:|---|---|

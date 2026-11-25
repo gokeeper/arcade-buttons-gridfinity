@@ -366,6 +366,6 @@ if __name__ == "__main__":
     parser.add_argument("--output", type=Path, default=Path("output/previews"))
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
-    render_overview(args.output / "preview.png")
+    render_overview(args.output / "drop_in_lids_preview.png")
     render_arcade_bin(args.output / "arcade_3x3_preview.png")
     render_joystick_bin(args.output / "jlf_tp_8yt_preview.png")
