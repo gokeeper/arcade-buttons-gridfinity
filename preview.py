@@ -19,7 +19,7 @@ import numpy as np
 from arcade_bin import FLOOR_Z, LOCATOR_BOTTOM_Z, cell_center
 from arcade_bin import make_bin as make_arcade_bin
 from arcade_bin import make_lid as make_arcade_lid
-from balltop_bin import BALL_DIAMETER, seated_ball_center_z
+from balltop_bin import BALL_DIAMETER, CELL_PITCH, PAD_Z, seated_ball_center_z
 from button_bin import HEIGHT_UNIT, Parameters, button_reference, foot
 from button_lid import make_flush_snap_lid
 from joystick_bin import (
@@ -164,6 +164,30 @@ def render_joystick_bin(path: Path) -> None:
         ax.set_title(label, fontsize=15, color="#172c3d", pad=10)
         ax.axis("off")
     fig.subplots_adjust(left=0.035, right=0.965, bottom=0.035, top=0.90, wspace=0.08)
+    fig.savefig(path, dpi=160, facecolor=fig.get_facecolor())
+    plt.close(fig)
+
+
+def render_balltop_bin(path: Path) -> None:
+    model_path = Path(__file__).resolve().parent / "output/bins/balltop_1x4_4u.step"
+    bin_body = cq.importers.importStep(str(model_path)).val()
+    center = bin_body.BoundingBox().center
+    radius = BALL_DIAMETER / 2
+    ball_z = seated_ball_center_z(PAD_Z, radius)
+    ball = cq.Solid.makeSphere(radius, angleDegrees1=-90, angleDegrees2=90)
+    balls = tuple(
+        (ball.translate((center.x, center.y + cell * CELL_PITCH, ball_z)), (211, 143, 78))
+        for cell in (-1.5, -0.5, 0.5, 1.5)
+    )
+
+    fig, axes = plt.subplots(1, 2, figsize=(10, 3.7), facecolor=PREVIEW_BACKGROUND)
+    views = (("Ball tops seated", 48, balls), ("Empty compartments", 62, ()))
+    for ax, (label, elevation, overlays) in zip(axes, views):
+        ax.imshow(rasterize(bin_body, (720, 440), azimuth=-155, elevation=elevation,
+                            overlays=overlays))
+        ax.set_title(label, fontsize=15, color="#172c3d", pad=10)
+        ax.axis("off")
+    fig.subplots_adjust(left=0.035, right=0.965, bottom=0.035, top=0.85, wspace=0.08)
     fig.savefig(path, dpi=160, facecolor=fig.get_facecolor())
     plt.close(fig)
 
@@ -369,3 +393,4 @@ if __name__ == "__main__":
     render_overview(args.output / "drop_in_lids_preview.png")
     render_arcade_bin(args.output / "arcade_3x3_preview.png")
     render_joystick_bin(args.output / "jlf_tp_8yt_preview.png")
+    render_balltop_bin(args.output / "balltop_1x4_preview.png")
