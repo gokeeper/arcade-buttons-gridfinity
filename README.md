@@ -1,12 +1,16 @@
 # Sanwa Buttons Joystick Storage x Gridfinity
 
 Gridfinity storage for Sanwa OBSF-24 and OBSF-30 arcade buttons, JLF-TP-8YT
-joysticks, and 35 mm LB-35 ball tops. The [mixed 3×3 bin](#mixed-33-arcade-bin)
-holds eight buttons and one ball top. The [7U and 8U joystick bins](#sanwa-jlf-tp-8yt-joystick-bin)
-hold the joystick sideways. The 8U has a two-button lid over the shaft.
-The [4U ball-top bin](#joystick-ball-top-bin) holds four balls in separate
-compartments. The mixed-bin and drop-in lids come with and without an 8 mm
-lift tab.
+joysticks, and 35 mm LB-35 ball tops.
+
+- [Mixed 3×3 arcade bin](#mixed-33-arcade-bin) holds eight buttons and one
+  ball top. The lid comes with or without an 8 mm lift tab.
+- [7U and 8U joystick bins](#sanwa-jlf-tp-8yt-joystick-bin) hold the joystick
+  sideways. The 8U has a two-button lid over the shaft.
+- [4U ball-top bin](#joystick-ball-top-bin) holds four ball tops in separate
+  compartments.
+- [Drop-in lids for existing bins](#drop-in-lids-for-existing-bins) fit 1×4
+  and 2×4 bins and come with or without an 8 mm lift tab.
 
 ## Mixed 3×3 arcade bin
 
