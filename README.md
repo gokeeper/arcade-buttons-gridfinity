@@ -9,12 +9,13 @@ hold a JLF-TP-8YT sideways. The 9U has a two-button lid over the shaft.
 
 ## Mixed 3×3 arcade bin
 
-![CAD views of the 3×3 bin with the lift-tab lid and ball in place, and with the lid removed to show the dividers and centering ring](output/previews/arcade_3x3_preview.png)
+![CAD views of the 7U button-side bin with the lift-tab lid and ball in place, and with the lid removed to show the dividers and centering ring](output/previews/arcade_3x3_preview.png)
 
 The 125.5 × 125.5 mm bin uses a 42 mm pitch and nine Gridfinity feet.
-Two dividers separate the 5U ball-top corner from the shared 7U button
+Two dividers separate the 5U ball-top corner from the shared 6U or 7U button
 cavity and support the inside corner of the removable L-shaped lid. The
-rims are 31.55 mm and 45.55 mm above the base, respectively.
+ball-top rim is 31.55 mm above the base. The button rims are 38.55 mm for 6U
+and 45.55 mm for 7U.
 
 | Row \ Column | 1 | 2 | 3 |
 |---|---|---|---|
@@ -24,23 +25,30 @@ rims are 31.55 mm and 45.55 mm above the base, respectively.
 
 | Part | Files | STL orientation |
 |---|---|---|
-| 3×3 bin | [STL](output/bins/arcade_3x3_5u_7u_bin.stl) · [STEP](output/bins/arcade_3x3_5u_7u_bin.step) | Feet down |
+| 3×3 bin with 6U button side | [STL](output/bins/arcade_3x3_5u_6u_bin.stl) · [STEP](output/bins/arcade_3x3_5u_6u_bin.step) | Feet down |
+| 3×3 bin with 7U button side | [STL](output/bins/arcade_3x3_5u_7u_bin.stl) · [STEP](output/bins/arcade_3x3_5u_7u_bin.step) | Feet down |
 | L-shaped lid without tab | [STL](output/lids/arcade_3x3_rim_stop_snap_lid_no_tab.stl) · [STEP](output/lids/arcade_3x3_rim_stop_snap_lid_no_tab.step) | Button face down |
 | L-shaped lid with 8 mm lift tab | [STL](output/lids/arcade_3x3_rim_stop_snap_lid_lift_tab_8mm.stl) · [STEP](output/lids/arcade_3x3_rim_stop_snap_lid_lift_tab_8mm.step) | Button face down |
 
 The lid covers all eight button positions. Its rim stop is 1.2 mm thick,
 the locator reaches 2 mm into the cavity, and the clips engage across
 2.4 mm of material. An 8 mm lift tab extends from the short edge behind
-the two OBSF-24 buttons. The STEP models share coordinates with the lid seated.
+the two OBSF-24 buttons. Both lid STLs fit either bin. The lid STEP files
+are seated on the 7U bin. Move them down 7 mm along Z to seat them on the 6U bin.
 
 The ball sits on a 3 mm high centering ring with an 18 mm bore, a 23 mm
 outside diameter, and a rounded contact edge. About 11 mm of the seated LB-35
 projects above the low rim, with access from both outside edges.
 
-CAD checks confirmed straight lift paths for the lid and ball, with
-7.55 mm of clearance below the bare OBSF-24 terminals and 7.85 mm below
-the bare OBSF-30 terminals. The bin and both lids have watertight STLs
-and valid STEP solids.
+The 6U button floor is 1 mm lower than the 7U floor. Both bins have straight
+lift paths for the loaded lid and ball in CAD. The table shows the modeled
+gap below the bare terminal tips. Check that the loaded lid seats fully on
+the first 6U print, especially with the OBSF-24 buttons installed.
+
+| Button side | OBSF-24 clearance | OBSF-30 clearance |
+|---|---:|---:|
+| 6U | 1.55 mm | 1.85 mm |
+| 7U | 7.55 mm | 7.85 mm |
 
 ## Drop-in lids for existing bins
 
@@ -126,19 +134,22 @@ A 36 mm gauge cleared the straight removal path in all four positions in CAD.
 
 | Part | Rim height | Bare shaft position | Files |
 |---|---:|---|---|
-| 3×3×8U bin | 52.55 mm | 3.15 mm above rim | [STL](output/bins/jlf_tp_8yt_3x3_8u_bin.stl) · [STEP](output/bins/jlf_tp_8yt_3x3_8u_bin.step) |
-| 3×3×9U bin | 59.55 mm | 3.85 mm below rim | [STL](output/bins/jlf_tp_8yt_3x3_9u_bin.stl) · [STEP](output/bins/jlf_tp_8yt_3x3_9u_bin.step) |
-| 9U shaft-bay lid for two OBSF-30 buttons | — | 1.85 mm below lid underside | [STL](output/lids/jlf_tp_8yt_3x3_9u_shaft_bay_lid.stl) · [STEP](output/lids/jlf_tp_8yt_3x3_9u_shaft_bay_lid.step) |
+| 3×3×8U bin | 52.55 mm | 5.85 mm below rim | [STL](output/bins/jlf_tp_8yt_3x3_8u_bin.stl) · [STEP](output/bins/jlf_tp_8yt_3x3_8u_bin.step) |
+| 3×3×9U bin | 59.55 mm | 12.85 mm below rim | [STL](output/bins/jlf_tp_8yt_3x3_9u_bin.stl) · [STEP](output/bins/jlf_tp_8yt_3x3_9u_bin.step) |
+| 9U shaft-bay lid for two OBSF-30 buttons | — | 10.85 mm below lid underside | [STL](output/lids/jlf_tp_8yt_3x3_9u_shaft_bay_lid.stl) · [STEP](output/lids/jlf_tp_8yt_3x3_9u_shaft_bay_lid.step) |
 
 Both bins have a 125.5 × 125.5 mm footprint. Unplug the harness, turn the
 5-pin connector upward and lower the 95 × 54 mm plate into the tapered
-2.3 mm slots. The seats hold its lower edge 23.2 mm above the base, leaving
-**3 mm between the floor and the modeled PCB and restrictor**. Both open bins
-also clear the LB-35 when attached. Remove the ball top to use the 9U lid.
+1.9 mm slots. The seats put the lower plate edge **7 mm above the floor**
+and 14.2 mm above the bin base. These dimensions come from the printed
+test fixture, where both the PCB and restrictor cleared the floor.
+[Fixture STL](output/test_fixtures/jlf_tp_8yt_plate_seat_7mm.stl) ·
+[STEP](output/test_fixtures/jlf_tp_8yt_plate_seat_7mm.step)
 
-For drawer clearance, the seated mounting plate reaches 77.2 mm above the
-base in either bin. The highest point in the CAD model is the upward-facing
-connector at 91.2 mm. Check this height on your assembled joystick.
+Both open bins also clear the LB-35 when attached. Remove the ball top
+to use the 9U lid. The seated mounting plate reaches 68.2 mm above the
+base in either bin. Measure the highest point on the assembled joystick
+for drawer clearance.
 
 The lid rests on the front and side rims. Each rear shoulder bears on
 about 63 mm² of the front ledge of its plate guide. A 2 mm deep locator
@@ -152,15 +163,15 @@ of the bin center. Each 30.5 mm bore has a 34.6 mm underside clip recess
 and a 2.4 mm snap panel. The bare terminal tips clear the floor by 21.85 mm.
 Hook a fingertip into the off-center recess at the rear edge to lift the
 loaded lid straight up, then lift the joystick by its plate. Both lift paths
-were checked in CAD. Printed fit and grip still need a physical check.
+were checked in CAD. On the full-size print, check that both plate ends
+reach their seats and that the PCB and restrictor clear the floor.
 
 Print the bin STLs feet down and the lid STL button face down. The 9U bin
 and lid STEP files share seated assembly coordinates.
 
-The bottom-view drawing shows a 75 mm body span and 31 mm from the shaft
-center to the side opposite the connector. The CAD check allows 81 mm across
-the body and 40 mm below the shaft to accommodate the protrusions shown in
-the underside photo.
+The CAD fit check allows 81 mm across the body and up to 6 mm of PCB or
+restrictor projection below the lower plate edge. That envelope leaves
+1 mm of modeled floor clearance.
 [Reference dimensions](https://m.media-amazon.com/images/I/41RymBEab1L._AC_UF350,350_QL80_.jpg) ·
 [Dimensioned bottom view](https://www.diyretroarcade.com/cdn/shop/files/8MWfs.jpg) ·
 [Underside photo](https://www.arcadexpress.com/35-medium_default/sanwa-jlf-tp-8yt-arcade-joystick.jpg) ·
@@ -178,11 +189,17 @@ python -m pip install -r requirements.txt
 ```
 
 ```bash
-# Mixed 3×3 bin and both L-shaped lids
+# Mixed 3×3 7U bin and both L-shaped lids
 python arcade_bin.py
+
+# Mixed 3×3 6U bin
+python arcade_bin.py --button-height 6
 
 # Sideways Sanwa JLF-TP-8YT joystick bins (8U and 9U) and 9U lid
 python joystick_bin.py
+
+# JLF plate-seat fixture with production slot width and seat height
+python joystick_plate_fixture.py
 
 # 1×4 lid for five OBSF-24 buttons
 python button_lid.py --rim-stop-snap 1x4

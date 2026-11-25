@@ -30,17 +30,16 @@ SHAFT_DIAMETER = 11.0
 WASHER_DIAMETER = 46.0
 WASHER_THICKNESS = 2.0
 
-# The drawing shows 75 mm across the body and 31 mm below the shaft with
-# the connector up. Leave extra room for the PCB and restrictor tabs in the photo.
+PLATE_LIFT = 7.0  # Height above the floor from the printed fit test.
+PLATE_SEAT_Z = FLOOR_Z + PLATE_LIFT
+SHAFT_Z = PLATE_SEAT_Z + PLATE_WIDTH / 2
+
 BODY_LENGTH = 81.0  # Across the plate, including the two body mounting ears.
 BODY_DEPTH = 37.0   # Behind the plate.
-BODY_BELOW_SHAFT = 40.0
-BODY_FLOOR_CLEARANCE = 3.0
-SHAFT_Z = FLOOR_Z + BODY_FLOOR_CLEARANCE + BODY_BELOW_SHAFT
-PLATE_SEAT_Z = SHAFT_Z - PLATE_WIDTH / 2
+BODY_BELOW_SHAFT = PLATE_WIDTH / 2 + 6.0  # Allow 6 mm past the plate for the PCB and restrictor.
 
 SLOT_LENGTH = 96.4
-SLOT_DEPTH = 2.3
+SLOT_DEPTH = 1.9  # 0.3 mm total play around the nominal 1.6 mm plate.
 GUIDE_INNER_X = 42.0
 GUIDE_DEPTH = 12.0
 GUIDE_FRONT_Y = PLATE_Y + GUIDE_DEPTH / 2
@@ -107,7 +106,7 @@ def make_lid() -> cq.Shape:
     """Return the 9U lid face up with the bottom of its locator at Z=0."""
     # End the shoulders just ahead of the flared plate slots. Only the thinner
     # rim stop crosses the guide tops. The locator stops at their front faces.
-    shoulder_y = PLATE_Y + SLOT_DEPTH / 2 + LEAD_IN + 0.3
+    shoulder_y = GUIDE_FRONT_Y - 3.35
     stop = lid_section(0, shoulder_y, LOCATOR_DEPTH, FLUSH_LID_THICKNESS)
     locator = lid_section(WALL_THICKNESS + LOCATOR_CLEARANCE, GUIDE_FRONT_Y + LOCATOR_CLEARANCE,
                           0, LOCATOR_DEPTH)

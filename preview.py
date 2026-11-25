@@ -23,7 +23,7 @@ from balltop_bin import BALL_DIAMETER, seated_ball_center_z
 from button_bin import Parameters, button_reference, foot
 from button_lid import make_flush_snap_lid
 from joystick_bin import (
-    BARE_SHAFT_REACH, BUTTON_POSITIONS, LID_BASE_Z, LID_FACE_Z, PLATE_FRONT_Y,
+    BARE_SHAFT_REACH, BODY_BELOW_SHAFT, BUTTON_POSITIONS, LID_BASE_Z, LID_FACE_Z, PLATE_FRONT_Y,
     PLATE_LENGTH, PLATE_SEAT_Z, PLATE_THICKNESS, PLATE_WIDTH, PLATE_Y,
     SHAFT_DIAMETER, SHAFT_Z, WASHER_DIAMETER, WASHER_THICKNESS, centered_box,
 )
@@ -132,7 +132,7 @@ def render_joystick_bin(path: Path) -> None:
     # Illustrative hardware for scale and orientation.
     housing = centered_box(62, 23, SHAFT_Z - 30, SHAFT_Z + 32, y=plate_back - 11.5)
     ears = centered_box(75, 12, SHAFT_Z - 6, SHAFT_Z + 6, y=plate_back - 6)
-    pcb = centered_box(66, 1.6, SHAFT_Z - 35, SHAFT_Z + 35, y=plate_back - 23.8)
+    pcb = centered_box(66, 1.6, SHAFT_Z - BODY_BELOW_SHAFT, SHAFT_Z + 35, y=plate_back - 23.8)
     pcb = cq.Workplane(obj=pcb).edges("|Y").fillet(4).val()
     gate = cq.Solid.makeCylinder(28, 10, cq.Vector(0, plate_back - 33, SHAFT_Z), shaft_axis)
     connector = centered_box(10, 8, SHAFT_Z + 34, SHAFT_Z + 41, x=-18, y=plate_back - 22)

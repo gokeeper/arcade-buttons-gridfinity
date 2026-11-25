@@ -20,10 +20,15 @@ def test_rim_seats_and_open_bin_removal(bin_and_height):
     gauges = joystick_gauges()
     assert rim == pytest.approx({8: 52.55, 9: 59.55}[height_u])
     assert gauges["bare shaft"].BoundingBox().zmax - rim == pytest.approx(
-        {8: 3.15, 9: -3.85}[height_u]
+        {8: -5.85, 9: -12.85}[height_u]
     )
-    assert gauges["PCB, restrictor and connector"].BoundingBox().zmin - FLOOR_Z == pytest.approx(3)
-    assert gauges["plate"].BoundingBox().zmin == pytest.approx(23.2)
+    assert gauges["PCB, restrictor and connector"].BoundingBox().zmin - FLOOR_Z == pytest.approx(1)
+    assert gauges["plate"].BoundingBox().zmin - FLOOR_Z == pytest.approx(7)
+    # The vertical slot walls are 1.9 mm apart along both guides.
+    for x in (-45, 45):
+        for side in (-1, 1):
+            wall = centered_box(3, 0.1, 14.2, rim - 1.2, x=x, y=PLATE_Y + side * 1.0)
+            assert wall.cut(body).Volume() < 1e-6
     check_fit(body)
 
 
