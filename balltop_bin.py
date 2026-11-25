@@ -1,4 +1,4 @@
-"""Make a four-compartment 5U ball-top bin from the supplied 1x4x7u STL."""
+"""Make a four-compartment 4U ball-top bin from the supplied 1x4x7u STL."""
 
 from __future__ import annotations
 
@@ -11,12 +11,12 @@ from OCP.BRepBuilderAPI import BRepBuilderAPI_Sewing
 from OCP.StlAPI import StlAPI_Reader
 from OCP.TopoDS import TopoDS_Shape
 
-from button_bin import cylinder, export_pair
+from button_bin import HEIGHT_UNIT, cylinder, export_pair
 from validate_models import validate_export
 
 
 CELL_PITCH = 42.0
-HEIGHT_REDUCTION = 14.0
+HEIGHT_REDUCTION = 2 * HEIGHT_UNIT
 LOWER_CUT_Z = 12.0
 FLOOR_Z = 6.1
 PAD_Z = 7.202  # The source has a raised floor pad under each ball.
@@ -142,7 +142,8 @@ def main() -> None:
 
     body = make_balltop_bin(load_source(args.source))
     args.output.mkdir(parents=True, exist_ok=True)
-    path = args.output / "balltop_1x4_5u_35mm"
+    height_units = int(body.BoundingBox().zlen // HEIGHT_UNIT)
+    path = args.output / f"balltop_1x4_{height_units}u"
     export_pair(body, path)
     validate_export(body, path)
     print(f"{path.with_suffix('.stl')} (four 35 mm ball-top compartments)")

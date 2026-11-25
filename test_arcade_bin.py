@@ -3,18 +3,13 @@
 import cadquery as cq
 import pytest
 
-from arcade_bin import button_positions, check_fit, make_bin, make_lid
+from arcade_bin import LOCATOR_BOTTOM_Z, button_positions, check_fit, make_bin, make_lid
 from balltop_bin import seated_ball_center_z
 
 
-@pytest.fixture(scope="module", params=[6, 7], ids=["6U", "7U"])
-def button_height_u(request):
-    return request.param
-
-
 @pytest.fixture(scope="module")
-def bin_body(button_height_u):
-    return make_bin(button_height_u)
+def bin_body():
+    return make_bin()
 
 
 @pytest.fixture(scope="module", params=[False, True], ids=["no-tab", "lift-tab"])
@@ -41,10 +36,10 @@ def test_lid_bores_and_recesses_match_the_eight_cell_layout(lid):
     assert lid.BoundingBox().zmax == pytest.approx(3.2)
 
 
-def test_bin_has_nine_feet_and_plain_low_outer_walls(bin_body, button_height_u):
+def test_bin_has_nine_feet_and_plain_low_outer_walls(bin_body):
     bounds = bin_body.BoundingBox()
     assert (bounds.xlen, bounds.ylen, bounds.zmin, bounds.zmax) == pytest.approx(
-        (125.5, 125.5, 0, {6: 38.55, 7: 45.55}[button_height_u]), abs=1e-6
+        (125.5, 125.5, 0, 38.55), abs=1e-6
     )
     foot_pads = [face for face in bin_body.Faces() if face.BoundingBox().zmax < 1e-6]
     assert len(foot_pads) == 9
@@ -57,8 +52,8 @@ def test_bin_has_nine_feet_and_plain_low_outer_walls(bin_body, button_height_u):
             assert not bin_body.isInside(cq.Vector(x, y, 31.56))
 
 
-def test_button_floor_height(bin_body, button_height_u):
-    floor_z = {6: 6.2, 7: 7.2}[button_height_u]
+def test_button_floor_height(bin_body):
+    floor_z = 6.2
     for _, x, y in button_positions():
         assert bin_body.isInside(cq.Vector(x, y, floor_z - 0.01))
         assert not bin_body.isInside(cq.Vector(x, y, floor_z + 0.01))
@@ -69,16 +64,14 @@ def test_button_floor_height(bin_body, button_height_u):
         assert bin_body.isInside(cq.Vector(x, y, floor_z - 0.01))
 
 
-def test_lid_seats_on_both_dividers_and_clears_the_loaded_bin(bin_body, lid, button_height_u):
-    rim_z, gaps = {6: (38.55, (1.55, 1.85)), 7: (45.55, (7.55, 7.85))}[button_height_u]
-    seated = lid.translate((0, 0, rim_z - 2))
+def test_lid_seats_on_both_dividers_and_clears_the_loaded_bin(bin_body, lid):
+    rim_z = 38.55
+    seated = lid.translate((0, 0, LOCATOR_BOTTOM_Z))
     for x, y in ((-21, 42), (-42, 21), (-21, 21)):
         assert bin_body.isInside(cq.Vector(x, y, rim_z - 0.01))
         assert seated.isInside(cq.Vector(x, y, rim_z + 0.01))
         assert not seated.isInside(cq.Vector(x, y, rim_z - 0.01))
-    assert check_fit(bin_body, seated, button_height_u=button_height_u) == pytest.approx(
-        {"obsf24": gaps[0], "obsf30": gaps[1]}
-    )
+    assert check_fit(bin_body, seated) == pytest.approx({"obsf24": 1.55, "obsf30": 1.85})
 
 
 def test_lift_tab_extends_only_the_two_button_rim_end():

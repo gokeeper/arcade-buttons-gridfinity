@@ -20,7 +20,7 @@ from arcade_bin import FLOOR_Z, LOCATOR_BOTTOM_Z, cell_center
 from arcade_bin import make_bin as make_arcade_bin
 from arcade_bin import make_lid as make_arcade_lid
 from balltop_bin import BALL_DIAMETER, seated_ball_center_z
-from button_bin import Parameters, button_reference, foot
+from button_bin import HEIGHT_UNIT, Parameters, button_reference, foot
 from button_lid import make_flush_snap_lid
 from joystick_bin import (
     BARE_SHAFT_REACH, BODY_BELOW_SHAFT, BUTTON_POSITIONS, LID_BASE_Z, LID_FACE_Z, PLATE_FRONT_Y,
@@ -153,8 +153,11 @@ def render_joystick_bin(path: Path) -> None:
                     for _, x, y in BUTTON_POSITIONS)
 
     fig, axes = plt.subplots(1, 2, figsize=(10, 4.9), facecolor=PREVIEW_BACKGROUND)
-    views = (("9U · Two-button lid seated", 54, (*hardware, (lid, (96, 128, 182)), *buttons)),
-             ("9U · Lid removed", 58, hardware))
+    height_units = int(bin_body.BoundingBox().zlen // HEIGHT_UNIT)
+    views = (
+        (f"{height_units}U · Two-button lid seated", 54, (*hardware, (lid, (96, 128, 182)), *buttons)),
+        (f"{height_units}U · Lid removed", 58, hardware),
+    )
     for ax, (label, elevation, parts) in zip(axes, views):
         ax.imshow(rasterize(bin_body, (640, 550), azimuth=60, elevation=elevation,
                             overlays=parts))

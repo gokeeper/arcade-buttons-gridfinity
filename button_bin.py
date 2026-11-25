@@ -15,6 +15,9 @@ from pathlib import Path
 import cadquery as cq
 
 
+HEIGHT_UNIT = 7.0  # Millimeters per vertical unit.
+
+
 @dataclass(frozen=True)
 class Parameters:
     height_u: int = 7
@@ -53,7 +56,7 @@ class Parameters:
 
     @property
     def nominal_z(self) -> float:
-        return self.height_u * 7.0
+        return self.height_u * HEIGHT_UNIT
 
     @property
     def total_z(self) -> float:

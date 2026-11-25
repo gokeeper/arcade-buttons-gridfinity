@@ -1,4 +1,4 @@
-"""Generate the 8U and 9U sideways JLF-TP-8YT bins and the 9U shaft-bay lid."""
+"""Generate the 7U and 8U sideways JLF-TP-8YT bins and the 8U shaft-bay lid."""
 
 import argparse
 from math import hypot
@@ -7,11 +7,11 @@ from pathlib import Path
 import cadquery as cq
 
 from arcade_bin import (
-    BUTTON_RIM_Z, FLOOR_Z, FOOTPRINT, LOCATOR_CLEARANCE, LOCATOR_DEPTH,
+    FLOOR_Z, FOOTPRINT, LOCATOR_CLEARANCE, LOCATOR_DEPTH, REFERENCE_RIM_Z,
     WALL_THICKNESS, make_3x3_blank,
 )
 from balltop_bin import BALL_DIAMETER
-from button_bin import Parameters, cylinder, export_pair, rounded_prism
+from button_bin import HEIGHT_UNIT, Parameters, cylinder, export_pair, rounded_prism
 from button_lid import (
     FLUSH_LID_THICKNESS, PLATE_THICKNESS as SNAP_PANEL_THICKNESS, RIM_STOP_CORNER_RADIUS,
     RIM_STOP_HEIGHT, SNAP_BUTTONS, cut_snap_openings,
@@ -45,7 +45,7 @@ GUIDE_DEPTH = 12.0
 GUIDE_FRONT_Y = PLATE_Y + GUIDE_DEPTH / 2
 LEAD_IN = 1.2
 
-RIM_Z = {8: BUTTON_RIM_Z + 7, 9: BUTTON_RIM_Z + 14}
+RIM_Z = {8: REFERENCE_RIM_Z + HEIGHT_UNIT, 9: REFERENCE_RIM_Z + 2 * HEIGHT_UNIT}
 LID_BASE_Z = RIM_Z[9] - LOCATOR_DEPTH
 LID_FACE_Z = RIM_Z[9] + RIM_STOP_HEIGHT
 BUTTON_POSITIONS = (("obsf30", -37, 20), ("obsf30", 37, 20))
@@ -79,7 +79,7 @@ def add_plate_guides(base: cq.Shape, *, outer_x: float, floor_z: float,
 
 def make_bin(height_u: int = 9) -> cq.Shape:
     if height_u not in RIM_Z:
-        raise ValueError("The JLF bin comes in 8U and 9U.")
+        raise ValueError("Use reference height 8 for the 7U bin or 9 for the 8U bin.")
     rim_z = RIM_Z[height_u]
     cavity = rounded_prism(FOOTPRINT - 2 * WALL_THICKNESS,
                            RIM_STOP_CORNER_RADIUS - WALL_THICKNESS,
@@ -103,7 +103,7 @@ def lid_section(inset: float, shoulder_y: float, bottom: float, top: float) -> c
 
 
 def make_lid() -> cq.Shape:
-    """Return the 9U lid face up with the bottom of its locator at Z=0."""
+    """Return the shaft-bay lid face up with the bottom of its locator at Z=0."""
     # End the shoulders just ahead of the flared plate slots. Only the thinner
     # rim stop crosses the guide tops. The locator stops at their front faces.
     shoulder_y = GUIDE_FRONT_Y - 3.35
@@ -159,7 +159,7 @@ def check_fit(bin_body: cq.Shape) -> None:
 
 
 def check_lid_fit(bin_body: cq.Shape, seated: cq.Shape) -> None:
-    """Verify 9U support, locator stops, snap mounts and loaded vertical removal."""
+    """Verify lid support, locator stops, snap mounts and loaded vertical removal."""
     rim_z = RIM_Z[9]
     if bin_body.intersect(seated).Volume() > 1e-6:
         raise RuntimeError("The lid interferes with the bin.")
@@ -230,7 +230,9 @@ def main() -> None:
     for height_u in RIM_Z:
         body = make_bin(height_u)
         check_fit(body)
-        path = bins / f"jlf_tp_8yt_3x3_{height_u}u_bin"
+        height_units = int(body.BoundingBox().zlen // HEIGHT_UNIT)
+        file_prefix = f"jlf_tp_8yt_3x3_{height_units}u"
+        path = bins / f"{file_prefix}_bin"
         export_pair(body, path)
         validate_export(body, path)
         print(f"{path}: verified plate seats, lift path, STL and STEP")
@@ -239,7 +241,7 @@ def main() -> None:
             seated = lid.translate((0, 0, LID_BASE_Z))
             check_lid_fit(body, seated)
             face_down = lid.rotate((0, 0, 0), (1, 0, 0), 180).translate((0, 0, FLUSH_LID_THICKNESS))
-            path = lids / "jlf_tp_8yt_3x3_9u_shaft_bay_lid"
+            path = lids / f"{file_prefix}_shaft_bay_lid"
             export_pair(seated, path, stl_shape=face_down)
             validate_export(seated, path)
             print(f"{path}: verified lid supports, locator, loaded lift path, STL and STEP")
